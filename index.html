@@ -3,607 +3,574 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Moon Widget - Self-Contained</title>
+  <title>Moon Phase Widget</title>
   <style>
-    /* Reset and base */
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
     }
+    
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-      background: #f0edf0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #0a0a12;
+      background-image: radial-gradient(ellipse at center, #1a1a2e 0%, #0a0a12 100%);
       min-height: 100vh;
-      padding: 2rem;
-      gap: 2rem;
-    }
-    .demo-grid {
       display: flex;
-      flex-wrap: wrap;
-      gap: 2rem;
       justify-content: center;
-      max-width: 1200px;
-      width: 100%;
-    }
-    .demo-card {
-      background: white;
-      border-radius: 1.5rem;
-      padding: 1.5rem;
-      box-shadow: 0 10px 40px rgba(0,0,0,0.06);
-      flex: 1 1 300px;
-      min-width: 280px;
-      max-width: 400px;
-    }
-    .demo-card h3 {
-      font-weight: 500;
-      color: #2d2a27;
-      margin-bottom: 1rem;
-      padding-bottom: 0.5rem;
-      border-bottom: 1px solid #eeeae5;
-    }
-    .note {
-      font-size: 0.8rem;
-      color: #7a7570;
-      margin-top: 0.8rem;
-      text-align: center;
-      background: #f5f2ee;
-      padding: 0.3rem 0.8rem;
-      border-radius: 20px;
-      display: inline-block;
-    }
-    hr {
-      width: 80%;
-      border: 0;
-      border-top: 2px dashed #d6d0c8;
-      margin: 1.5rem 0;
-    }
-    .footer {
-      color: #6b6560;
-      font-size: 0.9rem;
-      text-align: center;
-    }
-    .footer a {
-      color: #4a6a8a;
-      text-decoration: none;
-    }
-    .footer a:hover {
-      text-decoration: underline;
+      align-items: center;
+      padding: 2rem;
     }
 
-    /* ===== WIDGET STYLES ===== */
+    .container {
+      max-width: 500px;
+      width: 100%;
+      background: rgba(255,255,255,0.05);
+      backdrop-filter: blur(20px);
+      border-radius: 2rem;
+      padding: 2rem;
+      border: 1px solid rgba(255,255,255,0.08);
+      box-shadow: 0 30px 80px rgba(0,0,0,0.6);
+    }
+
+    .widget-header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    .widget-header h1 {
+      color: #f0e8d0;
+      font-weight: 300;
+      font-size: 1.8rem;
+      letter-spacing: 1px;
+    }
+
+    .widget-header .date-display {
+      color: #8a847e;
+      font-size: 0.9rem;
+      margin-top: 0.3rem;
+    }
+
+    /* Timezone Selector */
+    .timezone-selector {
+      margin-bottom: 2rem;
+    }
+
+    .timezone-selector select {
+      width: 100%;
+      padding: 0.8rem 1.2rem;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 12px;
+      color: #f0e8d0;
+      font-size: 1rem;
+      cursor: pointer;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%238a847e' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 1rem center;
+      transition: all 0.2s;
+    }
+
+    .timezone-selector select:hover {
+      background-color: rgba(255,255,255,0.1);
+      border-color: rgba(255,255,255,0.2);
+    }
+
+    .timezone-selector select:focus {
+      outline: none;
+      border-color: #f0e8d0;
+    }
+
+    .timezone-selector select option {
+      background: #1a1a2e;
+      color: #f0e8d0;
+    }
+
+    /* Single Moon Widget */
     .ac-widget-moon {
       display: block;
       width: 100%;
     }
-    
+
     .ac-widget {
-      background: #ffffff;
-      border-radius: 20px;
-      padding: 1.2rem 1rem;
-      box-shadow: 0 2px 12px rgba(0,0,0,0.04);
-      transition: all 0.2s;
-      width: 100%;
+      background: rgba(255,255,255,0.06);
+      border-radius: 24px;
+      padding: 1.8rem;
+      border: 1px solid rgba(255,255,255,0.06);
+      transition: all 0.3s;
     }
-    
+
     .ac-widget:hover {
-      box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+      background: rgba(255,255,255,0.08);
+      border-color: rgba(255,255,255,0.1);
     }
-    
+
     .ac-w-content {
       display: flex;
       flex-direction: column;
-      gap: 0.8rem;
+      gap: 1.2rem;
     }
-    
+
     /* Moon phase display */
     .ac-w-phase {
       display: flex;
       align-items: center;
-      gap: 1rem;
+      gap: 1.5rem;
     }
-    
+
     .moon-icon {
       flex-shrink: 0;
-      width: 64px;
-      height: 64px;
+      width: 80px;
+      height: 80px;
       position: relative;
     }
-    
+
     .moon-icon svg {
       width: 100%;
       height: 100%;
       display: block;
+      filter: drop-shadow(0 0 20px rgba(240, 232, 208, 0.15));
     }
-    
+
     .phase-info {
       flex: 1;
       min-width: 0;
     }
-    
+
     .phase-label {
       font-weight: 600;
-      font-size: 1.1rem;
-      color: #1a1a1a;
-      letter-spacing: -0.3px;
+      font-size: 1.4rem;
+      color: #f0e8d0;
+      letter-spacing: -0.5px;
     }
-    
+
     .phase-detail {
-      font-size: 0.85rem;
-      color: #6b6560;
-      margin-top: 0.15rem;
+      font-size: 0.95rem;
+      color: #a8a29e;
+      margin-top: 0.3rem;
     }
-    
+
     .phase-detail .illumination {
       font-weight: 500;
-      color: #4a4540;
+      color: #e8dcc8;
     }
-    
+
     /* Location */
     .ac-w-location {
-      font-size: 0.8rem;
+      font-size: 0.85rem;
       color: #8a847e;
       display: flex;
       align-items: center;
-      gap: 0.3rem;
-      padding-top: 0.4rem;
-      border-top: 1px solid #f0ede8;
+      gap: 0.4rem;
+      padding-top: 0.6rem;
+      border-top: 1px solid rgba(255,255,255,0.06);
     }
-    
+
     .ac-w-location .loc-icon {
       opacity: 0.5;
     }
-    
+
     .ac-w-location .loc-name {
+      color: #b0a89e;
       font-weight: 450;
     }
-    
-    /* Compact mode */
-    [data-size="compact"] .ac-widget {
-      padding: 0.6rem 0.8rem;
-      border-radius: 40px;
-      display: flex;
-      align-items: center;
-    }
-    
-    [data-size="compact"] .ac-w-content {
-      flex-direction: row;
-      align-items: center;
-      gap: 0.8rem;
-      width: 100%;
-    }
-    
-    [data-size="compact"] .ac-w-phase {
-      gap: 0.6rem;
-      flex: 1;
-    }
-    
-    [data-size="compact"] .moon-icon {
-      width: 44px;
-      height: 44px;
-    }
-    
-    [data-size="compact"] .phase-label {
-      font-size: 0.9rem;
-    }
-    
-    [data-size="compact"] .phase-detail {
-      font-size: 0.75rem;
-    }
-    
-    [data-size="compact"] .ac-w-location {
-      border-top: 0;
-      padding-top: 0;
-      font-size: 0.7rem;
-      padding-left: 0.6rem;
-      border-left: 1px solid #e8e4df;
-    }
-    
+
     /* Error state */
     .ac-widget--error {
-      background: #fcf8f5;
-      border: 1px solid #f0e3d8;
-      color: #7a5e4a;
-      padding: 1.2rem;
+      background: rgba(255, 200, 100, 0.05);
+      border: 1px solid rgba(255, 200, 100, 0.15);
+      color: #d4c8b0;
+      padding: 1.5rem;
       border-radius: 20px;
       text-align: center;
-      font-size: 0.9rem;
     }
-    
+
     .ac-w-foot {
       font-size: 0.75rem;
-      opacity: 0.6;
-      margin-top: 0.3rem;
+      opacity: 0.5;
+      margin-top: 0.5rem;
     }
-    
+
     /* Responsive */
     @media (max-width: 480px) {
+      .container {
+        padding: 1.5rem;
+      }
       .ac-widget {
-        padding: 0.8rem;
-        border-radius: 16px;
+        padding: 1.2rem;
       }
       .moon-icon {
-        width: 48px;
-        height: 48px;
+        width: 60px;
+        height: 60px;
       }
       .phase-label {
-        font-size: 0.95rem;
+        font-size: 1.1rem;
       }
-      [data-size="compact"] .ac-widget {
-        border-radius: 30px;
-        padding: 0.5rem 0.7rem;
-      }
-      [data-size="compact"] .moon-icon {
-        width: 36px;
-        height: 36px;
+      .widget-header h1 {
+        font-size: 1.4rem;
       }
     }
   </style>
 </head>
 <body>
 
-  <h2>🌙 Moon Phase Widget</h2>
-  <p style="color: #5a5550; text-align: center; max-width: 500px;">
-    Self-contained moon phase display with full and compact styles
-  </p>
-
-  <div class="demo-grid">
-
-    <!-- FULL CARD -->
-    <div class="demo-card">
-      <h3>📰 Full Card</h3>
-      <div class="ac-widget-moon"
-        data-lat="40.7128"
-        data-lng="-74.0060"
-        place="New York City"
-        data-size="full">
-      </div>
-      <div style="text-align: center; margin-top: 0.5rem;">
-        <span class="note">data-size="full"</span>
-      </div>
-    </div>
-
-    <!-- COMPACT -->
-    <div class="demo-card">
-      <h3>📏 Compact Strip</h3>
-      <div class="ac-widget-moon"
-        data-lat="40.7128"
-        data-lng="-74.0060"
-        place="New York"
-        data-size="compact">
-      </div>
-      <div style="text-align: center; margin-top: 0.5rem;">
-        <span class="note">data-size="compact"</span>
-      </div>
-    </div>
-
-    <!-- LONDON -->
-    <div class="demo-card">
-      <h3>🇬🇧 London</h3>
-      <div class="ac-widget-moon"
-        data-lat="51.5074"
-        data-lng="-0.1278"
-        place="London, UK"
-        data-size="full">
-      </div>
-      <div style="text-align: center; margin-top: 0.5rem;">
-        <span class="note">Full card · London</span>
-      </div>
-    </div>
-
-    <!-- TOKYO compact -->
-    <div class="demo-card">
-      <h3>🗼 Tokyo</h3>
-      <div class="ac-widget-moon"
-        data-lat="35.6762"
-        data-lng="139.6503"
-        place="Tokyo, Japan"
-        data-size="compact">
-      </div>
-      <div style="text-align: center; margin-top: 0.5rem;">
-        <span class="note">Compact · Tokyo</span>
-      </div>
-    </div>
-
+<div class="container">
+  <div class="widget-header">
+    <h1>🌙 Moon Phase</h1>
+    <div class="date-display" id="dateDisplay"></div>
   </div>
 
-  <hr>
-
-  <div style="max-width: 700px; background: #faf8f6; padding: 1.5rem 2rem; border-radius: 20px; width: 100%;">
-    <h4 style="margin-top: 0;">📦 How it works</h4>
-    <p>This is a <strong>self-contained</strong> moon widget that:</p>
-    <ul style="padding-left: 1.2rem; line-height: 1.8;">
-      <li>Calculates moon phase based on <strong>latitude/longitude</strong> and current date</li>
-      <li>Renders a <strong>visual moon</strong> using SVG with accurate illumination</li>
-      <li>Supports <strong>full</strong> (card) and <strong>compact</strong> (strip) layouts</li>
-      <li>Auto-initializes on <code>.ac-widget-moon</code> elements</li>
-      <li>No external API calls needed — <strong>works offline</strong></li>
-    </ul>
-    <p><strong>Attributes:</strong></p>
-    <ul style="padding-left: 1.2rem; line-height: 1.8;">
-      <li><code>data-lat</code> + <code>data-lng</code> – location coordinates (required)</li>
-      <li><code>place</code> – display name (optional)</li>
-      <li><code>data-size</code> – <code>"full"</code> or <code>"compact"</code></li>
-    </ul>
-    <p style="margin-bottom: 0;">✨ The widget automatically finds all <code>.ac-widget-moon</code> elements on the page.</p>
+  <!-- Timezone Selector -->
+  <div class="timezone-selector">
+    <select id="timezoneSelect">
+      <optgroup label="🌍 Major Cities">
+        <option value="40.7128,-74.0060,New York (EST)" data-tz="America/New_York">🗽 New York (EST)</option>
+        <option value="51.5074,-0.1278,London (GMT)" data-tz="Europe/London">🇬🇧 London (GMT)</option>
+        <option value="48.8566,2.3522,Paris (CET)" data-tz="Europe/Paris">🇫🇷 Paris (CET)</option>
+        <option value="52.5200,13.4050,Berlin (CET)" data-tz="Europe/Berlin">🇩🇪 Berlin (CET)</option>
+        <option value="41.9028,12.4964,Rome (CET)" data-tz="Europe/Rome">🇮🇹 Rome (CET)</option>
+        <option value="55.7558,37.6173,Moscow (MSK)" data-tz="Europe/Moscow">🇷🇺 Moscow (MSK)</option>
+        <option value="39.9042,116.4074,Beijing (CST)" data-tz="Asia/Shanghai">🇨🇳 Beijing (CST)</option>
+        <option value="35.6762,139.6503,Tokyo (JST)" data-tz="Asia/Tokyo">🇯🇵 Tokyo (JST)</option>
+        <option value="37.5665,126.9780,Seoul (KST)" data-tz="Asia/Seoul">🇰🇷 Seoul (KST)</option>
+        <option value="28.6139,77.2090,New Delhi (IST)" data-tz="Asia/Kolkata">🇮🇳 New Delhi (IST)</option>
+        <option value="-33.8688,151.2093,Sydney (AEDT)" data-tz="Australia/Sydney">🇦🇺 Sydney (AEDT)</option>
+        <option value="-23.5505,-46.6333,São Paulo (BRT)" data-tz="America/Sao_Paulo">🇧🇷 São Paulo (BRT)</option>
+        <option value="19.0760,72.8777,Mumbai (IST)" data-tz="Asia/Kolkata">🇮🇳 Mumbai (IST)</option>
+        <option value="34.0522,-118.2437,Los Angeles (PST)" data-tz="America/Los_Angeles">🌴 Los Angeles (PST)</option>
+        <option value="37.7749,-122.4194,San Francisco (PST)" data-tz="America/Los_Angeles">🌉 San Francisco (PST)</option>
+      </optgroup>
+      <optgroup label="🌐 GMT Timezones">
+        <option value="51.5074,-0.1278,GMT+0" data-tz="GMT">🌍 GMT+0 (London)</option>
+        <option value="40.7128,-74.0060,GMT-5" data-tz="GMT-5">🌍 GMT-5 (New York)</option>
+        <option value="48.8566,2.3522,GMT+1" data-tz="GMT+1">🌍 GMT+1 (Paris)</option>
+        <option value="52.5200,13.4050,GMT+1" data-tz="GMT+1">🌍 GMT+1 (Berlin)</option>
+        <option value="39.9042,116.4074,GMT+8" data-tz="GMT+8">🌍 GMT+8 (Beijing)</option>
+        <option value="35.6762,139.6503,GMT+9" data-tz="GMT+9">🌍 GMT+9 (Tokyo)</option>
+        <option value="-33.8688,151.2093,GMT+11" data-tz="GMT+11">🌍 GMT+11 (Sydney)</option>
+        <option value="-23.5505,-46.6333,GMT-3" data-tz="GMT-3">🌍 GMT-3 (São Paulo)</option>
+        <option value="34.0522,-118.2437,GMT-8" data-tz="GMT-8">🌍 GMT-8 (Los Angeles)</option>
+      </optgroup>
+    </select>
   </div>
 
-  <div class="footer">
-    ⚡ Self-contained moon widget · No external dependencies
+  <!-- Single Moon Widget -->
+  <div class="ac-widget-moon"
+    data-lat="40.7128"
+    data-lng="-74.0060"
+    place="New York (EST)"
+    data-size="full">
   </div>
+</div>
 
-  <!-- ========== WIDGET SCRIPT ========== -->
-  <script>
-    (function() {
-      'use strict';
+<script>
+  (function() {
+    'use strict';
 
-      // ----- Moon phase calculation -----
-      function getMoonPhase(date, lat, lng) {
-        // Based on Jean Meeus astronomical algorithms
-        const d = date || new Date();
-        const year = d.getUTCFullYear();
-        const month = d.getUTCMonth() + 1;
-        const day = d.getUTCDate();
-        const hours = d.getUTCHours() + d.getUTCMinutes() / 60 + d.getUTCSeconds() / 3600;
+    // ----- CORRECTED Moon phase calculation -----
+    function getMoonPhase(date, lat, lng) {
+      const d = date || new Date();
+      const year = d.getUTCFullYear();
+      const month = d.getUTCMonth() + 1;
+      const day = d.getUTCDate();
+      const hours = d.getUTCHours() + d.getUTCMinutes() / 60 + d.getUTCSeconds() / 3600;
 
-        // Calculate Julian Day Number
-        let a = Math.floor((14 - month) / 12);
-        let y = year + 4800 - a;
-        let m = month + 12 * a - 3;
-        let jdn = day + Math.floor((153 * m + 2) / 5) + 365 * y + Math.floor(y / 4) - Math.floor(y / 100) + Math.floor(y / 400) - 32045;
-        let jd = jdn + hours / 24 - 0.5;
+      // Calculate Julian Day Number
+      let a = Math.floor((14 - month) / 12);
+      let y = year + 4800 - a;
+      let m = month + 12 * a - 3;
+      let jdn = day + Math.floor((153 * m + 2) / 5) + 365 * y + Math.floor(y / 4) - Math.floor(y / 100) + Math.floor(y / 400) - 32045;
+      let jd = jdn + hours / 24 - 0.5;
 
-        // Time since J2000.0 (in days)
-        const T = (jd - 2451545.0) / 36525;
+      // Time since J2000.0 (in days)
+      const T = (jd - 2451545.0) / 36525;
 
-        // Moon's mean longitude (degrees)
-        const L_prime = 218.3165 + 481267.8813 * T;
-        // Moon's mean elongation (degrees)
-        const D = 297.8502 + 445267.1114 * T;
-        // Sun's mean anomaly (degrees)
-        const M = 357.5291 + 35999.0503 * T;
-        // Moon's mean anomaly (degrees)
-        const M_prime = 134.9634 + 477198.8676 * T;
-        // Moon's argument of latitude (degrees)
-        const F = 93.2720 + 483202.0175 * T;
+      // Moon's mean longitude (degrees)
+      const L_prime = 218.3165 + 481267.8813 * T;
+      // Moon's mean elongation (degrees)
+      const D = 297.8502 + 445267.1114 * T;
+      // Sun's mean anomaly (degrees)
+      const M = 357.5291 + 35999.0503 * T;
+      // Moon's mean anomaly (degrees)
+      const M_prime = 134.9634 + 477198.8676 * T;
+      // Moon's argument of latitude (degrees)
+      const F = 93.2720 + 483202.0175 * T;
 
-        // Convert to radians
-        const D_rad = D * Math.PI / 180;
-        const M_rad = M * Math.PI / 180;
-        const M_prime_rad = M_prime * Math.PI / 180;
-        const F_rad = F * Math.PI / 180;
+      // Convert to radians
+      const D_rad = D * Math.PI / 180;
+      const M_rad = M * Math.PI / 180;
+      const M_prime_rad = M_prime * Math.PI / 180;
+      const F_rad = F * Math.PI / 180;
 
-        // Ecliptic longitude of the Moon (degrees)
-        let lambda_moon = L_prime + 6.289 * Math.sin(M_prime_rad) 
-          - 1.274 * Math.sin((2 * D - M_prime_rad)) 
-          + 0.658 * Math.sin(2 * D_rad) 
-          - 0.186 * Math.sin(M_rad) 
-          - 0.059 * Math.sin((2 * D - 2 * M_prime_rad)) 
-          - 0.057 * Math.sin((D - M_prime_rad)) 
-          + 0.053 * Math.sin((D + M_prime_rad)) 
-          + 0.046 * Math.sin((2 * D - M_rad)) 
-          + 0.041 * Math.sin((2 * D + M_prime_rad)) 
-          - 0.035 * Math.sin(M_prime_rad) 
-          - 0.031 * Math.sin((2 * F - 2 * D_rad));
+      // Ecliptic longitude of the Moon (degrees)
+      let lambda_moon = L_prime + 6.289 * Math.sin(M_prime_rad) 
+        - 1.274 * Math.sin((2 * D - M_prime_rad)) 
+        + 0.658 * Math.sin(2 * D_rad) 
+        - 0.186 * Math.sin(M_rad) 
+        - 0.059 * Math.sin((2 * D - 2 * M_prime_rad)) 
+        - 0.057 * Math.sin((D - M_prime_rad)) 
+        + 0.053 * Math.sin((D + M_prime_rad)) 
+        + 0.046 * Math.sin((2 * D - M_rad)) 
+        + 0.041 * Math.sin((2 * D + M_prime_rad)) 
+        - 0.035 * Math.sin(M_prime_rad) 
+        - 0.031 * Math.sin((2 * F - 2 * D_rad));
 
-        // Ecliptic latitude of the Moon (degrees)
-        let beta_moon = 5.128 * Math.sin(F_rad) 
-          + 0.281 * Math.sin((M_prime_rad + F_rad)) 
-          - 0.277 * Math.sin((M_prime_rad - F_rad)) 
-          - 0.173 * Math.sin((2 * D - F_rad)) 
-          + 0.055 * Math.sin((2 * D - M_prime_rad - F_rad)) 
-          - 0.047 * Math.sin((2 * D + F_rad)) 
-          - 0.046 * Math.sin((2 * D - M_prime_rad + F_rad)) 
-          + 0.034 * Math.sin((2 * M_prime_rad - F_rad)) 
-          - 0.032 * Math.sin((M_rad + F_rad)) 
-          - 0.031 * Math.sin((M_rad - F_rad)) 
-          - 0.024 * Math.sin((2 * D + M_prime_rad - F_rad));
+      // Ecliptic latitude of the Moon (degrees)
+      let beta_moon = 5.128 * Math.sin(F_rad) 
+        + 0.281 * Math.sin((M_prime_rad + F_rad)) 
+        - 0.277 * Math.sin((M_prime_rad - F_rad)) 
+        - 0.173 * Math.sin((2 * D - F_rad)) 
+        + 0.055 * Math.sin((2 * D - M_prime_rad - F_rad)) 
+        - 0.047 * Math.sin((2 * D + F_rad)) 
+        - 0.046 * Math.sin((2 * D - M_prime_rad + F_rad)) 
+        + 0.034 * Math.sin((2 * M_prime_rad - F_rad)) 
+        - 0.032 * Math.sin((M_rad + F_rad)) 
+        - 0.031 * Math.sin((M_rad - F_rad)) 
+        - 0.024 * Math.sin((2 * D + M_prime_rad - F_rad));
 
-        // Convert lambda and beta to radians
-        const lambda_rad = lambda_moon * Math.PI / 180;
-        const beta_rad = beta_moon * Math.PI / 180;
+      // Convert lambda and beta to radians
+      const lambda_rad = lambda_moon * Math.PI / 180;
+      const beta_rad = beta_moon * Math.PI / 180;
 
-        // Obliquity of the ecliptic (degrees)
-        const epsilon = 23.4393 - 0.0130 * T;
-        const epsilon_rad = epsilon * Math.PI / 180;
+      // Obliquity of the ecliptic (degrees)
+      const epsilon = 23.4393 - 0.0130 * T;
+      const epsilon_rad = epsilon * Math.PI / 180;
 
-        // Equatorial coordinates
-        const alpha_rad = Math.atan2(
-          Math.sin(lambda_rad) * Math.cos(epsilon_rad) - Math.tan(beta_rad) * Math.sin(epsilon_rad),
-          Math.cos(lambda_rad)
-        );
-        const delta_rad = Math.asin(
-          Math.sin(beta_rad) * Math.cos(epsilon_rad) + Math.cos(beta_rad) * Math.sin(epsilon_rad) * Math.sin(lambda_rad)
-        );
+      // Equatorial coordinates
+      const alpha_rad = Math.atan2(
+        Math.sin(lambda_rad) * Math.cos(epsilon_rad) - Math.tan(beta_rad) * Math.sin(epsilon_rad),
+        Math.cos(lambda_rad)
+      );
+      const delta_rad = Math.asin(
+        Math.sin(beta_rad) * Math.cos(epsilon_rad) + Math.cos(beta_rad) * Math.sin(epsilon_rad) * Math.sin(lambda_rad)
+      );
 
-        // Greenwich Sidereal Time (degrees)
-        const GST = 280.4606 + 360.9856473 * (jd - 2451545.0);
-        const GST_rad = GST * Math.PI / 180;
+      // Greenwich Sidereal Time (degrees)
+      const GST = 280.4606 + 360.9856473 * (jd - 2451545.0);
+      const GST_rad = GST * Math.PI / 180;
 
-        // Hour angle
-        const HA = GST_rad - alpha_rad - lng * Math.PI / 180;
+      // Hour angle
+      const HA = GST_rad - alpha_rad - lng * Math.PI / 180;
 
-        // Altitude and azimuth
-        const lat_rad = lat * Math.PI / 180;
-        const altitude_rad = Math.asin(
-          Math.sin(lat_rad) * Math.sin(delta_rad) + Math.cos(lat_rad) * Math.cos(delta_rad) * Math.cos(HA)
-        );
+      // Altitude and azimuth
+      const lat_rad = lat * Math.PI / 180;
+      const altitude_rad = Math.asin(
+        Math.sin(lat_rad) * Math.sin(delta_rad) + Math.cos(lat_rad) * Math.cos(delta_rad) * Math.cos(HA)
+      );
 
-        // Phase angle (simplified)
-        const phase_angle = Math.atan2(
-          Math.cos(delta_rad) * Math.sin(HA),
-          Math.sin(delta_rad) * Math.cos(lat_rad) - Math.cos(delta_rad) * Math.sin(lat_rad) * Math.cos(HA)
-        );
+      // Phase angle (simplified)
+      const phase_angle = Math.atan2(
+        Math.cos(delta_rad) * Math.sin(HA),
+        Math.sin(delta_rad) * Math.cos(lat_rad) - Math.cos(delta_rad) * Math.sin(lat_rad) * Math.cos(HA)
+      );
 
-        // Illumination (0 = new moon, 1 = full moon)
-        const illumination = (1 + Math.cos(phase_angle)) / 2;
-        
-        // Phase names
-        const phaseNames = [
-          'New Moon', 'Waxing Crescent', 'First Quarter', 'Waxing Gibbous',
-          'Full Moon', 'Waning Gibbous', 'Last Quarter', 'Waning Crescent'
-        ];
-        
-        const phaseIndex = Math.round((illumination * 8) % 8);
-        const phaseName = phaseNames[phaseIndex % 8];
+      // Illumination (0 = new moon, 1 = full moon)
+      const illumination = (1 + Math.cos(phase_angle)) / 2;
+      
+      // Phase names with proper mapping
+      const phaseNames = [
+        'New Moon', 'Waxing Crescent', 'First Quarter', 'Waxing Gibbous',
+        'Full Moon', 'Waning Gibbous', 'Last Quarter', 'Waning Crescent'
+      ];
+      
+      // Map illumination to phase (0-1 -> 0-7)
+      const phaseIndex = Math.round(((illumination * 8) % 8));
+      const phaseName = phaseNames[phaseIndex % 8];
 
-        // Moon's age (days since new moon)
-        const newMoonJD = 2451550.09765 + 29.53058867 * Math.round((jd - 2451550.09765) / 29.53058867);
-        const age = jd - newMoonJD;
-        const ageDays = age % 29.53;
+      // Moon's age (days since new moon) - CORRECTED
+      // Known new moon reference: 2000-01-06 18:14 UTC (JD 2451550.09765)
+      const knownNewMoon = 2451550.09765;
+      const synodicPeriod = 29.53058867;
+      const daysSinceNewMoon = (jd - knownNewMoon) % synodicPeriod;
+      const ageDays = daysSinceNewMoon < 0 ? daysSinceNewMoon + synodicPeriod : daysSinceNewMoon;
 
-        return {
-          illumination: illumination,
-          phaseName: phaseName,
-          phaseIndex: phaseIndex,
-          ageDays: ageDays,
-          altitude: altitude_rad * 180 / Math.PI,
-          azimuth: phase_angle * 180 / Math.PI
-        };
-      }
+      return {
+        illumination: illumination,
+        phaseName: phaseName,
+        phaseIndex: phaseIndex,
+        ageDays: ageDays,
+        altitude: altitude_rad * 180 / Math.PI,
+        azimuth: phase_angle * 180 / Math.PI,
+        jd: jd
+      };
+    }
 
-      // ----- SVG Moon renderer -----
-      function renderMoonSVG(illumination, size) {
-        const w = size || 64;
-        const h = size || 64;
-        
-        // Clamp illumination
-        const illum = Math.max(0, Math.min(1, illumination));
-        
-        // Determine if waxing or waning based on illumination direction
-        // Using phase angle to determine if waxing (0-180°) or waning (180-360°)
-        // For visual simplicity, we'll use the illumination to create the crescent/gibbous shape
-        const isWaxing = illum < 0.5 ? true : false;
-        
-        // Moon circle
-        let svg = `<svg viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg">`;
-        
-        // Background circle (dark side)
-        svg += `<circle cx="${w/2}" cy="${h/2}" r="${w/2 - 2}" fill="#1a1a2e" stroke="#3d3d5c" stroke-width="1"/>`;
-        
-        if (illum > 0.01) {
-          // Light side
-          const r = w/2 - 2;
-          const cx = w/2;
-          const cy = h/2;
-          
-          // Illuminated portion
-          if (illum < 0.5) {
-            // Crescent
-            const xOffset = (1 - illum * 2) * r;
-            svg += `<path d="M ${cx - r} ${cy - r} A ${r} ${r} 0 0 1 ${cx + r} ${cy - r} A ${r} ${r} 0 0 1 ${cx - r} ${cy + r} A ${r} ${r} 0 0 0 ${cx + xOffset} ${cy} L ${cx - r} ${cy - r} Z" fill="#f0e8d0" opacity="0.9"/>`;
-          } else {
-            // Gibbous or full
-            const xOffset = (illum - 0.5) * 2 * r;
-            svg += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="#f0e8d0" opacity="0.9"/>`;
-            // Dark shadow for gibbous
-            if (illum < 0.99) {
-              const shadowX = (1 - illum) * 2 * r;
-              svg += `<path d="M ${cx - r} ${cy - r} A ${r} ${r} 0 0 1 ${cx + r} ${cy - r} A ${r} ${r} 0 0 1 ${cx - r} ${cy + r} A ${r} ${r} 0 0 0 ${cx + shadowX} ${cy} L ${cx - r} ${cy - r} Z" fill="#1a1a2e" opacity="0.3"/>`;
-            }
+    // ----- SVG Moon renderer (improved) -----
+    function renderMoonSVG(illumination, size) {
+      const w = size || 80;
+      const h = size || 80;
+      const illum = Math.max(0, Math.min(1, illumination));
+      const r = w/2 - 3;
+      const cx = w/2;
+      const cy = h/2;
+      
+      let svg = `<svg viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg">`;
+      
+      // Glow effect
+      svg += `<defs>`;
+      svg += `<radialGradient id="glow" cx="50%" cy="50%" r="50%">`;
+      svg += `<stop offset="0%" stop-color="rgba(240,232,208,0.1)" />`;
+      svg += `<stop offset="100%" stop-color="rgba(240,232,208,0)" />`;
+      svg += `</radialGradient>`;
+      svg += `</defs>`;
+      
+      // Background circle (dark side)
+      svg += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="#1a1a2e" stroke="#3d3d5c" stroke-width="1.5"/>`;
+      
+      if (illum > 0.005) {
+        if (illum < 0.5) {
+          // Crescent
+          const xOffset = (1 - illum * 2) * r;
+          svg += `<path d="M ${cx - r} ${cy - r} A ${r} ${r} 0 0 1 ${cx + r} ${cy - r} A ${r} ${r} 0 0 1 ${cx - r} ${cy + r} A ${r} ${r} 0 0 0 ${cx + xOffset} ${cy} L ${cx - r} ${cy - r} Z" fill="#f0e8d0" opacity="0.95"/>`;
+        } else {
+          // Gibbous or full
+          svg += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="#f0e8d0" opacity="0.95"/>`;
+          if (illum < 0.995) {
+            const shadowX = (1 - illum) * 2 * r;
+            svg += `<path d="M ${cx + r} ${cy - r} A ${r} ${r} 0 0 0 ${cx - r} ${cy - r} A ${r} ${r} 0 0 0 ${cx + r} ${cy + r} A ${r} ${r} 0 0 1 ${cx + shadowX} ${cy} L ${cx + r} ${cy - r} Z" fill="#1a1a2e" opacity="0.35"/>`;
           }
         }
+      }
+      
+      // Subtle texture
+      svg += `<circle cx="${cx - r*0.3}" cy="${cy - r*0.25}" r="${r*0.08}" fill="#e8dcc8" opacity="0.15"/>`;
+      svg += `<circle cx="${cx + r*0.25}" cy="${cy + r*0.2}" r="${r*0.06}" fill="#e8dcc8" opacity="0.1"/>`;
+      svg += `<circle cx="${cx + r*0.1}" cy="${cy - r*0.4}" r="${r*0.04}" fill="#e8dcc8" opacity="0.08"/>`;
+      
+      // Glow
+      svg += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="url(#glow)" />`;
+      
+      svg += `</svg>`;
+      return svg;
+    }
+
+    // ----- Widget renderer -----
+    function renderWidget(el, date) {
+      const lat = parseFloat(el.getAttribute('data-lat'));
+      const lng = parseFloat(el.getAttribute('data-lng'));
+      const place = el.getAttribute('place') || '';
+      const size = el.getAttribute('data-size') || 'full';
+      
+      if (isNaN(lat) || isNaN(lng)) {
+        el.innerHTML = `<div class="ac-widget ac-widget--error">
+          <div>📍 Missing coordinates</div>
+          <div class="ac-w-foot">Please provide valid latitude and longitude</div>
+        </div>`;
+        return;
+      }
+
+      try {
+        const phase = getMoonPhase(date || new Date(), lat, lng);
+        const illuminationPercent = Math.round(phase.illumination * 100);
         
-        // Subtle crater texture (optional)
-        svg += `<circle cx="${w*0.35}" cy="${h*0.3}" r="${w*0.06}" fill="#ddd5c0" opacity="0.2"/>`;
-        svg += `<circle cx="${w*0.65}" cy="${h*0.7}" r="${w*0.04}" fill="#ddd5c0" opacity="0.15"/>`;
-        svg += `<circle cx="${w*0.45}" cy="${h*0.65}" r="${w*0.03}" fill="#ddd5c0" opacity="0.1"/>`;
+        // Phase emojis
+        const phaseEmojis = ['🌑', '🌒', '🌓', '🌔', '🌕', '🌖', '🌗', '🌘'];
+        const emoji = phaseEmojis[phase.phaseIndex % 8];
         
-        svg += `</svg>`;
-        return svg;
-      }
-
-      // ----- Widget renderer -----
-      function renderWidget(el) {
-        const lat = parseFloat(el.getAttribute('data-lat'));
-        const lng = parseFloat(el.getAttribute('data-lng'));
-        const place = el.getAttribute('place') || '';
-        const size = el.getAttribute('data-size') || 'full';
+        // Build HTML
+        const iconSize = 80;
         
-        if (isNaN(lat) || isNaN(lng)) {
-          el.innerHTML = `<div class="ac-widget ac-widget--error">
-            <div>📍 Missing coordinates (data-lat, data-lng)</div>
-            <div class="ac-w-foot">Please provide valid latitude and longitude</div>
-          </div>`;
-          return;
+        let html = `<div class="ac-widget">`;
+        html += `<div class="ac-w-content">`;
+        html += `<div class="ac-w-phase">`;
+        
+        // Moon icon
+        html += `<div class="moon-icon">`;
+        html += renderMoonSVG(phase.illumination, iconSize);
+        html += `</div>`;
+        
+        // Phase info
+        html += `<div class="phase-info">`;
+        html += `<div class="phase-label">${emoji} ${phase.phaseName}</div>`;
+        html += `<div class="phase-detail">`;
+        html += `<span class="illumination">${illuminationPercent}% illuminated</span>`;
+        html += ` · Age ${Math.round(phase.ageDays)}d`;
+        html += `</div>`;
+        html += `</div>`;
+        html += `</div>`;
+        
+        // Location
+        if (place) {
+          html += `<div class="ac-w-location">`;
+          html += `<span class="loc-icon">📍</span>`;
+          html += `<span class="loc-name">${place}</span>`;
+          html += `</div>`;
         }
-
-        try {
-          const phase = getMoonPhase(new Date(), lat, lng);
-          const illuminationPercent = Math.round(phase.illumination * 100);
-          
-          // Determine emoji representation
-          const phaseEmojis = ['🌑', '🌒', '🌓', '🌔', '🌕', '🌖', '🌗', '🌘'];
-          const emoji = phaseEmojis[phase.phaseIndex % 8];
-          
-          // Build HTML
-          const isCompact = size === 'compact';
-          const iconSize = isCompact ? 44 : 64;
-          
-          let html = `<div class="ac-widget">`;
-          html += `<div class="ac-w-content">`;
-          html += `<div class="ac-w-phase">`;
-          
-          // Moon icon
-          html += `<div class="moon-icon">`;
-          html += renderMoonSVG(phase.illumination, iconSize);
-          html += `</div>`;
-          
-          // Phase info
-          html += `<div class="phase-info">`;
-          html += `<div class="phase-label">${emoji} ${phase.phaseName}</div>`;
-          html += `<div class="phase-detail">`;
-          html += `<span class="illumination">${illuminationPercent}% illuminated</span>`;
-          html += ` · Age ${Math.round(phase.ageDays)}d`;
-          html += `</div>`;
-          html += `</div>`;
-          html += `</div>`;
-          
-          // Location (full mode only or always in compact)
-          if (place) {
-            html += `<div class="ac-w-location">`;
-            html += `<span class="loc-icon">📍</span>`;
-            html += `<span class="loc-name">${place}</span>`;
-            html += `</div>`;
-          }
-          
-          html += `</div>`;
-          html += `</div>`;
-          
-          el.innerHTML = html;
-          
-        } catch (error) {
-          el.innerHTML = `<div class="ac-widget ac-widget--error">
-            <div>🌙 Couldn't load moon phase</div>
-            <div class="ac-w-foot">${error.message}</div>
-          </div>`;
-        }
+        
+        html += `</div>`;
+        html += `</div>`;
+        
+        el.innerHTML = html;
+        
+      } catch (error) {
+        el.innerHTML = `<div class="ac-widget ac-widget--error">
+          <div>🌙 Couldn't load moon phase</div>
+          <div class="ac-w-foot">${error.message}</div>
+        </div>`;
       }
+    }
 
-      // ----- Initialize all widgets -----
-      function initWidgets() {
-        const nodes = document.querySelectorAll('.ac-widget-moon');
-        for (let i = 0; i < nodes.length; i++) {
-          const el = nodes[i];
-          if (el.getAttribute('data-ac-widget-mounted') === '1') continue;
-          el.setAttribute('data-ac-widget-mounted', '1');
-          renderWidget(el);
-        }
+    // ----- Update date display -----
+    function updateDateDisplay() {
+      const now = new Date();
+      const options = { 
+        weekday: 'long', 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric',
+        timeZone: document.getElementById('timezoneSelect').value.split(',')[2] || 'UTC'
+      };
+      const dateStr = now.toLocaleDateString('en-US', options);
+      document.getElementById('dateDisplay').textContent = `📅 ${dateStr}`;
+    }
+
+    // ----- Initialize widget with timezone -----
+    function initWidgetWithTimezone() {
+      const select = document.getElementById('timezoneSelect');
+      const value = select.value;
+      const parts = value.split(',');
+      
+      if (parts.length >= 3) {
+        const lat = parseFloat(parts[0]);
+        const lng = parseFloat(parts[1]);
+        const place = parts.slice(2).join(',');
+        
+        const widget = document.querySelector('.ac-widget-moon');
+        widget.setAttribute('data-lat', lat);
+        widget.setAttribute('data-lng', lng);
+        widget.setAttribute('place', place);
+        
+        // Use the timezone to get current date
+        const tz = select.options[select.selectedIndex].getAttribute('data-tz') || 'UTC';
+        const now = new Date();
+        // Convert to the selected timezone
+        const dateInTz = new Date(now.toLocaleString('en-US', { timeZone: tz }));
+        
+        renderWidget(widget, dateInTz);
+        updateDateDisplay();
       }
+    }
 
-      // ----- Auto-init -----
-      if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initWidgets);
-      } else {
-        initWidgets();
-      }
+    // ----- Event listeners -----
+    document.addEventListener('DOMContentLoaded', function() {
+      const select = document.getElementById('timezoneSelect');
+      
+      // Initial render with default (New York)
+      const defaultOption = select.querySelector('option[value="40.7128,-74.0060,New York (EST)"]');
+      if (defaultOption) select.value = defaultOption.value;
+      
+      initWidgetWithTimezone();
+      
+      // Change handler
+      select.addEventListener('change', initWidgetWithTimezone);
+      
+      // Auto-refresh every minute
+      setInterval(initWidgetWithTimezone, 60000);
+    });
 
-    })();
-  </script>
+  })();
+</script>
 
 </body>
 </html>
