@@ -591,7 +591,7 @@
         let currentLng = -0.1278;
         let currentView = 'day';
 
-        // --- Moon phase calculation (PRECISE with 1 decimal place) ---
+        // --- ACCURATE Moon phase using Meeus algorithm ---
         function getMoonPhase(date) {
             const year = date.getUTCFullYear();
             const month = date.getUTCMonth() + 1;
@@ -605,20 +605,39 @@
             let jd = day + Math.floor((153 * m + 2) / 5) + 365 * y + Math.floor(y / 4) - Math.floor(y / 100) + Math.floor(y / 400) - 32045;
             jd = jd + hours / 24 - 0.5;
 
-            // Known new moon: 2000-01-06 18:14 UTC = JD 2451550.09765
+            // Meeus algorithm for moon phase
+            const T = (jd - 2451545.0) / 36525.0;
+
+            // Mean elements
+            let D = (297.8501921 + 445267.1114034 * T - 0.0018819 * T * T + (1.0 / 545868.0) * T * T * T - (1.0 / 113065000.0) * T * T * T * T) % 360;
+            let M = (357.5291092 + 35999.0502909 * T - 0.0001536 * T * T + (1.0 / 24490000.0) * T * T * T) % 360;
+            let Mp = (134.9633964 + 477198.8675055 * T + 0.0087414 * T * T + (1.0 / 69699.0) * T * T * T - (1.0 / 14712000.0) * T * T * T * T) % 360;
+
+            // Convert to radians
+            const D_rad = D * Math.PI / 180;
+            const M_rad = M * Math.PI / 180;
+            const Mp_rad = Mp * Math.PI / 180;
+
+            // Phase angle
+            const phase_angle = Math.PI - D_rad
+                - 6.289 * Math.sin(Mp_rad)
+                + 2.100 * Math.sin(M_rad)
+                - 1.274 * Math.sin(2 * D_rad - Mp_rad)
+                - 0.658 * Math.sin(2 * D_rad)
+                - 0.214 * Math.sin(2 * Mp_rad)
+                - 0.110 * Math.sin(D_rad);
+
+            let illumination = (1 + Math.cos(phase_angle)) / 2;
+            illumination = Math.max(0, Math.min(1, illumination));
+
+            // Moon age
             const knownNewMoonJD = 2451550.09765;
             const synodicPeriod = 29.53058867;
-
             let daysSinceNewMoon = jd - knownNewMoonJD;
             let age = daysSinceNewMoon % synodicPeriod;
             if (age < 0) age += synodicPeriod;
 
-            // Phase angle
-            const phaseAngle = (age / synodicPeriod) * 2 * Math.PI;
-            let illumination = (1 - Math.cos(phaseAngle)) / 2;
-            illumination = Math.max(0, Math.min(1, illumination));
-
-            // Phase name with precise thresholds
+            // Phase name
             let name, emoji, shortName;
             const phase = age / synodicPeriod;
 
