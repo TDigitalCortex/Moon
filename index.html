@@ -23,7 +23,7 @@
         }
 
         .container {
-            max-width: 700px;
+            max-width: 750px;
             width: 100%;
             background: rgba(255, 255, 255, 0.05);
             backdrop-filter: blur(20px);
@@ -364,7 +364,7 @@
             cursor: pointer;
             transition: all 0.2s;
             border: 1px solid transparent;
-            min-height: 60px;
+            min-height: 75px;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -391,50 +391,53 @@
             font-weight: 500;
         }
         .month-day .day-emoji {
-            font-size: 1.4rem;
+            font-size: 1.6rem;
             line-height: 1.2;
         }
         .month-day .day-illum {
-            color: #6a6460;
-            font-size: 0.55rem;
-            margin-top: 0.1rem;
+            color: #8a847e;
+            font-size: 0.65rem;
+            font-weight: 500;
         }
         .month-day .day-age {
             color: #4a4440;
             font-size: 0.5rem;
+        }
+        .month-day .day-phase-name {
+            color: #6a6460;
+            font-size: 0.5rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%;
+            padding: 0 0.1rem;
         }
         .month-day.future {
             opacity: 0.85;
         }
         .month-day.future .day-number::after {
             content: "🔮";
-            font-size: 0.45rem;
+            font-size: 0.4rem;
             margin-left: 0.1rem;
             opacity: 0.6;
         }
 
-        @media (max-width: 480px) {
-            .container { padding: 1.2rem; }
-            .ac-widget { padding: 1.5rem 1rem; }
-            .moon-emoji { font-size: 4rem; }
-            .phase-label { font-size: 1.4rem; }
-            .widget-header h1 { font-size: 1.4rem; }
-            .calendar-control input[type="date"] { min-width: 120px; }
-            .nav-controls button { padding: 0.5rem 0.7rem; min-width: 36px; font-size: 0.9rem; }
-            .nav-controls .today-btn { padding: 0.5rem 0.8rem; font-size: 0.75rem; }
-            .quick-dates button { font-size: 0.65rem; padding: 0.25rem 0.6rem; }
-            .month-day { min-height: 50px; padding: 0.3rem 0.1rem; }
-            .month-day .day-emoji { font-size: 1.2rem; }
+        @media (max-width: 600px) {
+            .month-day { min-height: 60px; padding: 0.3rem 0.1rem; }
+            .month-day .day-emoji { font-size: 1.3rem; }
             .month-day .day-number { font-size: 0.7rem; }
-            .month-day .day-illum { font-size: 0.5rem; }
-            .month-grid { gap: 2px; }
+            .month-day .day-illum { font-size: 0.55rem; }
+            .month-day .day-phase-name { font-size: 0.4rem; }
+            .month-day .day-age { display: none; }
         }
 
-        @media (max-width: 380px) {
+        @media (max-width: 420px) {
+            .month-day { min-height: 50px; padding: 0.2rem 0.1rem; }
             .month-day .day-emoji { font-size: 1rem; }
             .month-day .day-number { font-size: 0.6rem; }
-            .month-day .day-illum { font-size: 0.45rem; }
-            .month-day { min-height: 42px; }
+            .month-day .day-illum { font-size: 0.5rem; }
+            .month-day .day-phase-name { display: none; }
+            .month-grid { gap: 2px; }
         }
     </style>
 </head>
@@ -586,9 +589,9 @@
         let currentPlace = 'London (GMT)';
         let currentLat = 51.5074;
         let currentLng = -0.1278;
-        let currentView = 'day'; // 'day' or 'month'
+        let currentView = 'day';
 
-        // --- Moon phase calculation ---
+        // --- Moon phase calculation (same algorithm, returning phase name) ---
         function getMoonPhase(date) {
             const year = date.getUTCFullYear();
             const month = date.getUTCMonth() + 1;
@@ -612,36 +615,51 @@
             let illumination = (1 - Math.cos(phaseAngle)) / 2;
             illumination = Math.max(0, Math.min(1, illumination));
 
-            let name, emoji;
+            // More precise phase naming with full names
+            let name, emoji, shortName;
             const phase = age / synodicPeriod;
 
             if (phase < 0.03 || phase > 0.97) {
                 name = 'New Moon';
+                shortName = 'New';
                 emoji = '🌑';
             } else if (phase >= 0.03 && phase < 0.22) {
                 name = 'Waxing Crescent';
+                shortName = 'Wax Crescent';
                 emoji = '🌒';
             } else if (phase >= 0.22 && phase < 0.28) {
                 name = 'First Quarter';
+                shortName = '1st Qtr';
                 emoji = '🌓';
             } else if (phase >= 0.28 && phase < 0.47) {
                 name = 'Waxing Gibbous';
+                shortName = 'Wax Gibbous';
                 emoji = '🌔';
             } else if (phase >= 0.47 && phase < 0.53) {
                 name = 'Full Moon';
+                shortName = 'Full';
                 emoji = '🌕';
             } else if (phase >= 0.53 && phase < 0.72) {
                 name = 'Waning Gibbous';
+                shortName = 'Wan Gibbous';
                 emoji = '🌖';
             } else if (phase >= 0.72 && phase < 0.78) {
                 name = 'Last Quarter';
+                shortName = 'Last Qtr';
                 emoji = '🌗';
             } else {
                 name = 'Waning Crescent';
+                shortName = 'Wan Crescent';
                 emoji = '🌘';
             }
 
-            return { illumination, name, emoji, age };
+            return {
+                illumination: illumination,
+                name: name,
+                shortName: shortName,
+                emoji: emoji,
+                age: age
+            };
         }
 
         // --- Render day view ---
@@ -740,15 +758,6 @@
             }
         }
 
-        // --- Get date in timezone ---
-        function getDateInTimezone(date, tz) {
-            try {
-                return new Date(date.toLocaleString('en-US', { timeZone: tz }));
-            } catch (_) {
-                return new Date(date);
-            }
-        }
-
         // --- Update widget with current settings ---
         function updateWidget(selectedDate) {
             const dateToUse = selectedDate || currentDate;
@@ -789,7 +798,7 @@
             const firstDay = new Date(year, month, 1);
             const lastDay = new Date(year, month + 1, 0);
             const daysInMonth = lastDay.getDate();
-            const startDayOfWeek = firstDay.getDay(); // 0 = Sunday
+            const startDayOfWeek = firstDay.getDay();
 
             let html = '';
 
@@ -810,7 +819,6 @@
                 today = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 12, 0, 0);
             }
 
-            // Get selected date
             const selectedDate = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 12, 0, 0);
 
             // Previous month days
@@ -824,6 +832,7 @@
                     <div class="day-number">${dayNum}</div>
                     <div class="day-emoji">${phase.emoji}</div>
                     <div class="day-illum">${percent}%</div>
+                    <div class="day-phase-name">${phase.shortName}</div>
                 </div>`;
             }
 
@@ -849,11 +858,12 @@
                     <div class="day-number">${dayNum}</div>
                     <div class="day-emoji">${phase.emoji}</div>
                     <div class="day-illum">${percent}%</div>
+                    <div class="day-phase-name">${phase.shortName}</div>
                     <div class="day-age">${Math.round(phase.age)}d</div>
                 </div>`;
             }
 
-            // Next month days to fill the grid
+            // Next month days
             const totalDays = startDayOfWeek + daysInMonth;
             const remainingDays = (7 - (totalDays % 7)) % 7;
             for (let dayNum = 1; dayNum <= remainingDays; dayNum++) {
@@ -864,12 +874,12 @@
                     <div class="day-number">${dayNum}</div>
                     <div class="day-emoji">${phase.emoji}</div>
                     <div class="day-illum">${percent}%</div>
+                    <div class="day-phase-name">${phase.shortName}</div>
                 </div>`;
             }
 
             monthGrid.innerHTML = html;
 
-            // Add click listeners to month days
             monthGrid.querySelectorAll('.month-day').forEach(el => {
                 el.addEventListener('click', function() {
                     const dateStr = this.dataset.date;
@@ -877,7 +887,6 @@
                         const d = new Date(dateStr);
                         currentDate = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 12, 0, 0);
                         updateWidget(currentDate);
-                        // Switch to day view
                         setView('day');
                     }
                 });
@@ -947,7 +956,6 @@
 
         // --- Event handlers ---
 
-        // Timezone change
         selectEl.addEventListener('change', function() {
             const value = this.value;
             const parts = value.split(',');
@@ -960,7 +968,6 @@
             }
         });
 
-        // Date picker change
         datePicker.addEventListener('change', function() {
             if (this.value) {
                 const parts = this.value.split('-');
@@ -975,7 +982,6 @@
             }
         });
 
-        // Today button
         todayBtn.addEventListener('click', function() {
             const now = new Date();
             try {
@@ -987,7 +993,6 @@
             updateWidget(currentDate);
         });
 
-        // Previous day button
         prevDayBtn.addEventListener('click', function() {
             const newDate = new Date(currentDate);
             newDate.setDate(currentDate.getDate() - 1);
@@ -995,7 +1000,6 @@
             updateWidget(currentDate);
         });
 
-        // Next day button
         nextDayBtn.addEventListener('click', function() {
             const newDate = new Date(currentDate);
             newDate.setDate(currentDate.getDate() + 1);
@@ -1003,7 +1007,6 @@
             updateWidget(currentDate);
         });
 
-        // Quick date chips
         quickDates.addEventListener('click', function(e) {
             const btn = e.target.closest('button');
             if (!btn) return;
@@ -1027,14 +1030,12 @@
             updateWidget(currentDate);
         });
 
-        // View toggle
         viewToggleBtns.forEach(btn => {
             btn.addEventListener('click', function() {
                 setView(this.dataset.view);
             });
         });
 
-        // Month navigation
         prevMonthBtn.addEventListener('click', function() {
             const newDate = new Date(currentDate);
             newDate.setMonth(currentDate.getMonth() - 1);
