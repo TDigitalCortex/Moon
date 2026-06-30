@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Moon Widget – Astro Charts Clone</title>
+  <!-- Local CSS (optional, you can also use the CDN version below) -->
+  <!-- <link rel="stylesheet" href="widget.css"> -->
+  <!-- Or use the original CSS from Astro-Charts for exact styling -->
+  <link rel="stylesheet" href="https://astro-charts.com/static/widget.css">
+  <style>
+    /* demo page styling */
+    body {
+      font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      background: #f5f3f0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      margin: 2rem;
+      gap: 3rem;
+    }
+    .demo-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 2.5rem;
+      justify-content: center;
+      max-width: 1000px;
+      width: 100%;
+    }
+    .demo-card {
+      background: white;
+      border-radius: 1.5rem;
+      padding: 1.5rem 1.5rem 1rem;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+      flex: 1 1 300px;
+      min-width: 280px;
+    }
+    .demo-card h3 {
+      margin-top: 0;
+      font-weight: 400;
+      color: #3d3a36;
+      letter-spacing: 0.3px;
+      border-bottom: 1px solid #eae7e2;
+      padding-bottom: 0.6rem;
+      margin-bottom: 1.2rem;
+    }
+    .demo-card .ac-widget-moon {
+      margin: 0 auto;
+    }
+    .note {
+      color: #6b6560;
+      font-size: 0.9rem;
+      background: #edeae5;
+      padding: 0.5rem 1.2rem;
+      border-radius: 40px;
+      margin-top: 0.5rem;
+    }
+    hr {
+      width: 80%;
+      border: 0;
+      border-top: 2px dashed #d6d0c8;
+      margin: 2rem 0;
+    }
+    code {
+      background: #f0ede8;
+      padding: 0.2rem 0.6rem;
+      border-radius: 12px;
+      font-size: 0.85rem;
+    }
+    .footer {
+      margin-top: 2rem;
+      font-size: 0.9rem;
+      color: #5f5a55;
+    }
+    a {
+      color: #3d5a80;
+      text-decoration: none;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>🌙 Moon Widget · Astro Charts style</h2>
+  <p style="color: #4a4540; max-width: 600px; text-align: center;">
+    Full card & compact strip versions – using the same API and CSS as the original widget.
+  </p>
+
+  <div class="demo-grid">
+
+    <!-- FULL (editorial card) -->
+    <div class="demo-card">
+      <h3>📰 Full · New York</h3>
+      <div class="ac-widget-moon"
+        geo_pk="17"
+        place="New York City, New York, United States"
+        data-size="full">
+      </div>
+      <div class="note">← data-size="full"</div>
+    </div>
+
+    <!-- COMPACT (sidebar strip) -->
+    <div class="demo-card">
+      <h3>📏 Compact · New York</h3>
+      <div class="ac-widget-moon"
+        geo_pk="17"
+        place="New York City, New York, United States"
+        data-size="compact">
+      </div>
+      <div class="note">← data-size="compact"</div>
+    </div>
+
+    <!-- another example with different location (London) -->
+    <div class="demo-card">
+      <h3>🇬🇧 London · compact</h3>
+      <div class="ac-widget-moon"
+        geo_pk="10"
+        place="London, United Kingdom"
+        data-size="compact">
+      </div>
+      <div class="note">geo_pk="10" · compact</div>
+    </div>
+
+    <!-- example with lat/lng (Tokyo) -->
+    <div class="demo-card">
+      <h3>🗼 Tokyo · full</h3>
+      <div class="ac-widget-moon"
+        data-lat="35.6762"
+        data-lng="139.6503"
+        place="Tokyo, Japan"
+        data-size="full">
+      </div>
+      <div class="note">using lat/lng instead of geo_pk</div>
+    </div>
+
+  </div>
+
+  <hr>
+
+  <div style="max-width: 700px; background: #faf8f6; padding: 1.5rem 2rem; border-radius: 20px;">
+    <h4 style="margin-top: 0;">📦 How it works</h4>
+    <p>This is a self-contained copy of the <code>widget-moon.js</code> script from Astro-Charts.<br>
+    It fetches moon phase data from <code>https://astro-charts.com/tools/widget_html/moon/</code> and injects the HTML.</p>
+    <p><strong>Attributes:</strong></p>
+    <ul style="padding-left: 1.2rem; line-height: 1.6;">
+      <li><code>geo_pk</code> – Astro-Charts location ID (preferred)</li>
+      <li><code>data-lat</code> + <code>data-lng</code> – fallback latitude/longitude</li>
+      <li><code>data-size</code> – <code>"full"</code> or <code>"compact"</code></li>
+      <li><code>place</code> – display name (optional)</li>
+    </ul>
+    <p><strong>Files in this repo:</strong></p>
+    <ul style="padding-left: 1.2rem;">
+      <li><code>index.html</code> – this demo page</li>
+      <li><code>widget-moon.js</code> – the exact widget logic (minified, IIFE)</li>
+      <li><code>widget.css</code> – (optional) local styles, or you can use the CDN version</li>
+      <li><code>README.md</code> – instructions & credits</li>
+    </ul>
+    <p style="margin-bottom: 0;">✨ The widget auto-initializes on <code>.ac-widget-moon</code> elements.</p>
+  </div>
+
+  <div class="footer">
+    ⚡ Powered by <a href="https://astro-charts.com" target="_blank">Astro-Charts</a> · 
+    Widget code mirror for demonstration &amp; offline use.
+  </div>
+
+  <!-- ========== WIDGET SCRIPT ========== -->
+  <!-- 
+    You can either use the original CDN script:
+    <script src="https://astro-charts.com/static/widget-moon.js"></script>
+    
+    Or host it locally (recommended for this repo):
+  -->
+  <script src="widget-moon.js"></script>
+  <!-- 
+    The local widget-moon.js is an exact copy of the original, 
+    but with the endpoint pointing to astro-charts.com (CORS).
+  -->
+
+</body>
+</html>
