@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Moon Phase Widget</title>
     <style>
-        /* --- Reset & Base --- */
         * {
             margin: 0;
             padding: 0;
@@ -99,7 +98,6 @@
             border-color: rgba(255, 255, 255, 0.12);
         }
 
-        /* --- Moon Display (emoji + text) --- */
         .moon-emoji {
             font-size: 5rem;
             line-height: 1.2;
@@ -235,11 +233,10 @@
         </select>
     </div>
 
-    <!-- Widget container -->
     <div class="ac-widget-moon"
-         data-lat="51.5074"
-         data-lng="-0.1278"
-         data-place="London (GMT)"
+         data-lat="40.7128"
+         data-lng="-74.0060"
+         data-place="New York (EST)"
          data-size="full">
         <div class="ac-widget ac-widget--loading">
             <div class="spinner"></div>
@@ -257,72 +254,80 @@
         const selectEl = document.getElementById('timezoneSelect');
         const dateDisplay = document.getElementById('dateDisplay');
 
-        // --- Moon phase calculation (fixed) ---
-        function calculateMoonPhase(date) {
-            // Julian Day
+        // --- SIMPLE, RELIABLE moon phase calculation ---
+        // Based on the well-known "moon phase" algorithm used by many open-source projects
+        function getMoonPhase(date) {
+            // Convert date to Julian Day
             const year = date.getUTCFullYear();
             const month = date.getUTCMonth() + 1;
             const day = date.getUTCDate();
             const hours = date.getUTCHours() + date.getUTCMinutes() / 60 + date.getUTCSeconds() / 3600;
 
+            // Julian Day calculation (valid for 1900-2100)
             let a = Math.floor((14 - month) / 12);
             let y = year + 4800 - a;
             let m = month + 12 * a - 3;
             let jd = day + Math.floor((153 * m + 2) / 5) + 365 * y + Math.floor(y / 4) - Math.floor(y / 100) + Math.floor(y / 400) - 32045;
             jd = jd + hours / 24 - 0.5;
 
-            // Days since J2000.0
-            const days = jd - 2451545.0;
-            const T = days / 36525;
-
-            // Mean elements
-            let D = (297.8502 + 445267.1114 * T) % 360;
-            let M = (357.5291 + 35999.0503 * T) % 360;
-            let Mp = (134.9634 + 477198.8676 * T) % 360;
-
-            const D_rad = D * Math.PI / 180;
-            const M_rad = M * Math.PI / 180;
-            const Mp_rad = Mp * Math.PI / 180;
-
-            // Phase angle (angle between Sun and Moon)
-            const phase_angle = Math.PI - D_rad
-                - 6.289 * Math.sin(Mp_rad)
-                + 2.100 * Math.sin(M_rad)
-                - 1.274 * Math.sin(2 * D_rad - Mp_rad)
-                - 0.658 * Math.sin(2 * D_rad)
-                - 0.214 * Math.sin(2 * Mp_rad)
-                - 0.110 * Math.sin(D_rad);
-
-            // Illumination (0 = new, 1 = full)
-            let illumination = (1 + Math.cos(phase_angle)) / 2;
-            illumination = Math.max(0, Math.min(1, illumination));
-
-            // Moon age (days since last new moon)
-            const newMoonJD = 2451550.09765;
+            // Known new moon: 2000-01-06 18:14 UTC = JD 2451550.09765
+            const knownNewMoonJD = 2451550.09765;
             const synodicPeriod = 29.53058867;
-            let age = (jd - newMoonJD) % synodicPeriod;
+
+            // Calculate days since known new moon
+            let daysSinceNewMoon = jd - knownNewMoonJD;
+            // Modulo to get age within one synodic month
+            let age = daysSinceNewMoon % synodicPeriod;
             if (age < 0) age += synodicPeriod;
 
-            // Phase name based on illumination
-            const k = illumination;
-            let name;
-            let emoji;
-            if (k < 0.03) { name = 'New Moon'; emoji = '🌑'; }
-            else if (k < 0.22) { name = 'Waxing Crescent'; emoji = '🌒'; }
-            else if (k < 0.28) { name = 'First Quarter'; emoji = '🌓'; }
-            else if (k < 0.47) { name = 'Waxing Gibbous'; emoji = '🌔'; }
-            else if (k < 0.53) { name = 'Full Moon'; emoji = '🌕'; }
-            else if (k < 0.72) { name = 'Waning Gibbous'; emoji = '🌖'; }
-            else if (k < 0.78) { name = 'Last Quarter'; emoji = '🌗'; }
-            else { name = 'Waning Crescent'; emoji = '🌘'; }
+            // Calculate illumination
+            // age 0 = new moon, age 14.765 = full moon, age 29.53 = new moon
+            // Using cosine to create smooth illumination curve
+            const phaseAngle = (age / synodicPeriod) * 2 * Math.PI;
+            let illumination = (1 - Math.cos(phaseAngle)) / 2;
+            illumination = Math.max(0, Math.min(1, illumination));
 
-            return { illumination, name, emoji, age };
+            // Determine phase name
+            let name, emoji;
+            const phase = age / synodicPeriod; // 0 to 1
+
+            if (phase < 0.03 || phase > 0.97) {
+                name = 'New Moon';
+                emoji = '🌑';
+            } else if (phase >= 0.03 && phase < 0.22) {
+                name = 'Waxing Crescent';
+                emoji = '🌒';
+            } else if (phase >= 0.22 && phase < 0.28) {
+                name = 'First Quarter';
+                emoji = '🌓';
+            } else if (phase >= 0.28 && phase < 0.47) {
+                name = 'Waxing Gibbous';
+                emoji = '🌔';
+            } else if (phase >= 0.47 && phase < 0.53) {
+                name = 'Full Moon';
+                emoji = '🌕';
+            } else if (phase >= 0.53 && phase < 0.72) {
+                name = 'Waning Gibbous';
+                emoji = '🌖';
+            } else if (phase >= 0.72 && phase < 0.78) {
+                name = 'Last Quarter';
+                emoji = '🌗';
+            } else {
+                name = 'Waning Crescent';
+                emoji = '🌘';
+            }
+
+            return {
+                illumination: illumination,
+                name: name,
+                emoji: emoji,
+                age: age
+            };
         }
 
         // --- Render widget ---
-        function renderWidget(phaseData, place, source) {
+        function renderWidget(phaseData, place) {
             const percent = Math.round(phaseData.illumination * 100);
-            const sourceText = source ? ` · ${source}` : '';
 
             let html = `<div class="ac-widget">`;
             html += `<div class="moon-emoji">${phaseData.emoji}</div>`;
@@ -330,9 +335,6 @@
             html += `<div class="phase-detail">`;
             html += `<span class="illumination">${percent}% illuminated</span>`;
             html += ` · Age ${Math.round(phaseData.age)}d`;
-            if (source) {
-                html += `<span class="source">${source}</span>`;
-            }
             html += `</div>`;
 
             if (place) {
@@ -410,14 +412,14 @@
                 dateInTz = new Date();
             }
 
-            // Calculate locally (reliable, no API dependency)
-            const phase = calculateMoonPhase(dateInTz);
-            renderWidget(phase, place, '');
+            // Calculate phase
+            const phase = getMoonPhase(dateInTz);
+            renderWidget(phase, place);
         }
 
         // --- Init ---
         document.addEventListener('DOMContentLoaded', function() {
-            const defaultOption = selectEl.querySelector('option[value="51.5074,-0.1278,Europe/London,London (GMT)"]');
+            const defaultOption = selectEl.querySelector('option[value="40.7128,-74.0060,America/New_York,New York (EST)"]');
             if (defaultOption) selectEl.value = defaultOption.value;
             updateWidget();
             selectEl.addEventListener('change', updateWidget);
