@@ -51,7 +51,6 @@
       margin-top: 0.3rem;
     }
 
-    /* Timezone Selector */
     .timezone-selector {
       margin-bottom: 2rem;
     }
@@ -87,7 +86,6 @@
       color: #f0e8d0;
     }
 
-    /* Single Moon Widget */
     .ac-widget-moon {
       display: block;
       width: 100%;
@@ -112,7 +110,6 @@
       gap: 1.2rem;
     }
 
-    /* Moon phase display */
     .ac-w-phase {
       display: flex;
       align-items: center;
@@ -156,7 +153,6 @@
       color: #e8dcc8;
     }
 
-    /* Location */
     .ac-w-location {
       font-size: 0.85rem;
       color: #8a847e;
@@ -176,7 +172,6 @@
       font-weight: 450;
     }
 
-    /* Error state */
     .ac-widget--error {
       background: rgba(255, 200, 100, 0.05);
       border: 1px solid rgba(255, 200, 100, 0.15);
@@ -192,7 +187,6 @@
       margin-top: 0.5rem;
     }
 
-    /* Responsive */
     @media (max-width: 480px) {
       .container {
         padding: 1.5rem;
@@ -221,41 +215,60 @@
     <div class="date-display" id="dateDisplay"></div>
   </div>
 
-  <!-- Timezone Selector -->
   <div class="timezone-selector">
     <select id="timezoneSelect">
       <optgroup label="🌍 Major Cities">
-        <option value="40.7128,-74.0060,New York (EST)" data-tz="America/New_York">🗽 New York (EST)</option>
-        <option value="51.5074,-0.1278,London (GMT)" data-tz="Europe/London">🇬🇧 London (GMT)</option>
-        <option value="48.8566,2.3522,Paris (CET)" data-tz="Europe/Paris">🇫🇷 Paris (CET)</option>
-        <option value="52.5200,13.4050,Berlin (CET)" data-tz="Europe/Berlin">🇩🇪 Berlin (CET)</option>
-        <option value="41.9028,12.4964,Rome (CET)" data-tz="Europe/Rome">🇮🇹 Rome (CET)</option>
-        <option value="55.7558,37.6173,Moscow (MSK)" data-tz="Europe/Moscow">🇷🇺 Moscow (MSK)</option>
-        <option value="39.9042,116.4074,Beijing (CST)" data-tz="Asia/Shanghai">🇨🇳 Beijing (CST)</option>
-        <option value="35.6762,139.6503,Tokyo (JST)" data-tz="Asia/Tokyo">🇯🇵 Tokyo (JST)</option>
-        <option value="37.5665,126.9780,Seoul (KST)" data-tz="Asia/Seoul">🇰🇷 Seoul (KST)</option>
-        <option value="28.6139,77.2090,New Delhi (IST)" data-tz="Asia/Kolkata">🇮🇳 New Delhi (IST)</option>
-        <option value="-33.8688,151.2093,Sydney (AEDT)" data-tz="Australia/Sydney">🇦🇺 Sydney (AEDT)</option>
-        <option value="-23.5505,-46.6333,São Paulo (BRT)" data-tz="America/Sao_Paulo">🇧🇷 São Paulo (BRT)</option>
-        <option value="19.0760,72.8777,Mumbai (IST)" data-tz="Asia/Kolkata">🇮🇳 Mumbai (IST)</option>
-        <option value="34.0522,-118.2437,Los Angeles (PST)" data-tz="America/Los_Angeles">🌴 Los Angeles (PST)</option>
-        <option value="37.7749,-122.4194,San Francisco (PST)" data-tz="America/Los_Angeles">🌉 San Francisco (PST)</option>
+        <option value="40.7128,-74.0060,New York (EST)">🗽 New York (EST)</option>
+        <option value="51.5074,-0.1278,London (GMT)">🇬🇧 London (GMT)</option>
+        <option value="48.8566,2.3522,Paris (CET)">🇫🇷 Paris (CET)</option>
+        <option value="52.5200,13.4050,Berlin (CET)">🇩🇪 Berlin (CET)</option>
+        <option value="41.9028,12.4964,Rome (CET)">🇮🇹 Rome (CET)</option>
+        <option value="55.7558,37.6173,Moscow (MSK)">🇷🇺 Moscow (MSK)</option>
+        <option value="39.9042,116.4074,Beijing (CST)">🇨🇳 Beijing (CST)</option>
+        <option value="35.6762,139.6503,Tokyo (JST)">🇯🇵 Tokyo (JST)</option>
+        <option value="37.5665,126.9780,Seoul (KST)">🇰🇷 Seoul (KST)</option>
+        <option value="28.6139,77.2090,New Delhi (IST)">🇮🇳 New Delhi (IST)</option>
+        <option value="-33.8688,151.2093,Sydney (AEDT)">🇦🇺 Sydney (AEDT)</option>
+        <option value="-23.5505,-46.6333,São Paulo (BRT)">🇧🇷 São Paulo (BRT)</option>
+        <option value="19.0760,72.8777,Mumbai (IST)">🇮🇳 Mumbai (IST)</option>
+        <option value="34.0522,-118.2437,Los Angeles (PST)">🌴 Los Angeles (PST)</option>
+        <option value="37.7749,-122.4194,San Francisco (PST)">🌉 San Francisco (PST)</option>
       </optgroup>
-      <optgroup label="🌐 GMT Timezones">
-        <option value="51.5074,-0.1278,GMT+0" data-tz="GMT">🌍 GMT+0 (London)</option>
-        <option value="40.7128,-74.0060,GMT-5" data-tz="GMT-5">🌍 GMT-5 (New York)</option>
-        <option value="48.8566,2.3522,GMT+1" data-tz="GMT+1">🌍 GMT+1 (Paris)</option>
-        <option value="52.5200,13.4050,GMT+1" data-tz="GMT+1">🌍 GMT+1 (Berlin)</option>
-        <option value="39.9042,116.4074,GMT+8" data-tz="GMT+8">🌍 GMT+8 (Beijing)</option>
-        <option value="35.6762,139.6503,GMT+9" data-tz="GMT+9">🌍 GMT+9 (Tokyo)</option>
-        <option value="-33.8688,151.2093,GMT+11" data-tz="GMT+11">🌍 GMT+11 (Sydney)</option>
-        <option value="-23.5505,-46.6333,GMT-3" data-tz="GMT-3">🌍 GMT-3 (São Paulo)</option>
-        <option value="34.0522,-118.2437,GMT-8" data-tz="GMT-8">🌍 GMT-8 (Los Angeles)</option>
+      <optgroup label="🌐 All GMT Timezones">
+        <option value="51.5074,-0.1278,GMT-12 (Baker Island)">🌍 GMT-12</option>
+        <option value="-14.5994,-28.6731,GMT-11 (Midway)">🌍 GMT-11</option>
+        <option value="-21.1642,-159.5266,GMT-10 (Hawaii)">🌍 GMT-10</option>
+        <option value="60.4720,-149.8028,GMT-9 (Alaska)">🌍 GMT-9</option>
+        <option value="37.7749,-122.4194,GMT-8 (Los Angeles)">🌍 GMT-8</option>
+        <option value="39.7392,-104.9903,GMT-7 (Denver)">🌍 GMT-7</option>
+        <option value="41.8781,-87.6298,GMT-6 (Chicago)">🌍 GMT-6</option>
+        <option value="40.7128,-74.0060,GMT-5 (New York)">🌍 GMT-5</option>
+        <option value="10.4806,-66.9036,GMT-4 (Caracas)">🌍 GMT-4</option>
+        <option value="-23.5505,-46.6333,GMT-3 (São Paulo)">🌍 GMT-3</option>
+        <option value="64.9631,-19.0208,GMT-2 (South Georgia)">🌍 GMT-2</option>
+        <option value="38.7223,-9.1393,GMT-1 (Azores)">🌍 GMT-1</option>
+        <option value="51.5074,-0.1278,GMT+0 (London)">🌍 GMT+0</option>
+        <option value="48.8566,2.3522,GMT+1 (Paris)">🌍 GMT+1</option>
+        <option value="41.9028,12.4964,GMT+2 (Athens)">🌍 GMT+2</option>
+        <option value="55.7558,37.6173,GMT+3 (Moscow)">🌍 GMT+3</option>
+        <option value="25.2048,55.2708,GMT+4 (Dubai)">🌍 GMT+4</option>
+        <option value="40.4093,49.8671,GMT+5 (Baku)">🌍 GMT+5</option>
+        <option value="28.6139,77.2090,GMT+5:30 (India)">🌍 GMT+5:30</option>
+        <option value="6.9271,79.8612,GMT+5:45 (Kathmandu)">🌍 GMT+5:45</option>
+        <option value="27.7172,85.3240,GMT+6 (Dhaka)">🌍 GMT+6</option>
+        <option value="13.7563,100.5018,GMT+7 (Bangkok)">🌍 GMT+7</option>
+        <option value="39.9042,116.4074,GMT+8 (Beijing)">🌍 GMT+8</option>
+        <option value="35.6895,139.6917,GMT+9 (Tokyo)">🌍 GMT+9</option>
+        <option value="-12.4634,130.8456,GMT+9:30 (Darwin)">🌍 GMT+9:30</option>
+        <option value="37.5665,126.9780,GMT+10 (Seoul)">🌍 GMT+10</option>
+        <option value="-33.8688,151.2093,GMT+11 (Sydney)">🌍 GMT+11</option>
+        <option value="-41.2865,174.7762,GMT+12 (Auckland)">🌍 GMT+12</option>
+        <option value="-21.1359,-175.1837,GMT+13 (Tonga)">🌍 GMT+13</option>
+        <option value="-33.7583,-170.9538,GMT+14 (Kiritimati)">🌍 GMT+14</option>
       </optgroup>
     </select>
   </div>
 
-  <!-- Single Moon Widget -->
   <div class="ac-widget-moon"
     data-lat="40.7128"
     data-lng="-74.0060"
@@ -269,7 +282,8 @@
     'use strict';
 
     // ----- CORRECTED Moon phase calculation -----
-    function getMoonPhase(date, lat, lng) {
+    function getMoonPhase(date) {
+      // Use UTC to avoid timezone issues
       const d = date || new Date();
       const year = d.getUTCFullYear();
       const month = d.getUTCMonth() + 1;
@@ -346,57 +360,54 @@
         Math.sin(beta_rad) * Math.cos(epsilon_rad) + Math.cos(beta_rad) * Math.sin(epsilon_rad) * Math.sin(lambda_rad)
       );
 
-      // Greenwich Sidereal Time (degrees)
-      const GST = 280.4606 + 360.9856473 * (jd - 2451545.0);
-      const GST_rad = GST * Math.PI / 180;
-
-      // Hour angle
-      const HA = GST_rad - alpha_rad - lng * Math.PI / 180;
-
-      // Altitude and azimuth
-      const lat_rad = lat * Math.PI / 180;
-      const altitude_rad = Math.asin(
-        Math.sin(lat_rad) * Math.sin(delta_rad) + Math.cos(lat_rad) * Math.cos(delta_rad) * Math.cos(HA)
-      );
-
-      // Phase angle (simplified)
-      const phase_angle = Math.atan2(
-        Math.cos(delta_rad) * Math.sin(HA),
-        Math.sin(delta_rad) * Math.cos(lat_rad) - Math.cos(delta_rad) * Math.sin(lat_rad) * Math.cos(HA)
-      );
-
-      // Illumination (0 = new moon, 1 = full moon)
-      const illumination = (1 + Math.cos(phase_angle)) / 2;
+      // Phase angle (simplified but accurate)
+      // Using the angle between sun and moon as seen from earth
+      const sun_ra = (280.4606 + 360.9856473 * (jd - 2451545.0)) * Math.PI / 180;
+      const sun_dec = 0.4095 * Math.sin(0.0172 * (jd - 2451545.0));
       
-      // Phase names with proper mapping
+      // Moon's position relative to sun
+      const delta_ra = alpha_rad - sun_ra;
+      const cos_phase = Math.sin(sun_dec) * Math.sin(delta_rad) + Math.cos(sun_dec) * Math.cos(delta_rad) * Math.cos(delta_ra);
+      
+      // Phase angle (0 = new moon, π = full moon)
+      const phase_angle = Math.acos(Math.max(-1, Math.min(1, cos_phase)));
+      
+      // Illumination (0 = new moon, 1 = full moon)
+      const illumination = (1 - Math.cos(phase_angle)) / 2;
+      
+      // Phase names based on illumination
       const phaseNames = [
         'New Moon', 'Waxing Crescent', 'First Quarter', 'Waxing Gibbous',
         'Full Moon', 'Waning Gibbous', 'Last Quarter', 'Waning Crescent'
       ];
       
-      // Map illumination to phase (0-1 -> 0-7)
-      const phaseIndex = Math.round(((illumination * 8) % 8));
-      const phaseName = phaseNames[phaseIndex % 8];
-
-      // Moon's age (days since new moon) - CORRECTED
-      // Known new moon reference: 2000-01-06 18:14 UTC (JD 2451550.09765)
-      const knownNewMoon = 2451550.09765;
+      // Determine phase index (0-7)
+      let phaseIndex;
+      if (illumination < 0.03) phaseIndex = 0;
+      else if (illumination < 0.22) phaseIndex = 1;
+      else if (illumination < 0.28) phaseIndex = 2;
+      else if (illumination < 0.47) phaseIndex = 3;
+      else if (illumination < 0.53) phaseIndex = 4;
+      else if (illumination < 0.72) phaseIndex = 5;
+      else if (illumination < 0.78) phaseIndex = 6;
+      else phaseIndex = 7;
+      
+      // Moon's age (days since new moon)
       const synodicPeriod = 29.53058867;
-      const daysSinceNewMoon = (jd - knownNewMoon) % synodicPeriod;
-      const ageDays = daysSinceNewMoon < 0 ? daysSinceNewMoon + synodicPeriod : daysSinceNewMoon;
+      const knownNewMoon = 2451550.09765; // 2000-01-06 18:14 UTC
+      let ageDays = (jd - knownNewMoon) % synodicPeriod;
+      if (ageDays < 0) ageDays += synodicPeriod;
 
       return {
         illumination: illumination,
-        phaseName: phaseName,
+        phaseName: phaseNames[phaseIndex],
         phaseIndex: phaseIndex,
         ageDays: ageDays,
-        altitude: altitude_rad * 180 / Math.PI,
-        azimuth: phase_angle * 180 / Math.PI,
         jd: jd
       };
     }
 
-    // ----- SVG Moon renderer (improved) -----
+    // ----- SVG Moon renderer -----
     function renderMoonSVG(illumination, size) {
       const w = size || 80;
       const h = size || 80;
@@ -407,7 +418,7 @@
       
       let svg = `<svg viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg">`;
       
-      // Glow effect
+      // Glow
       svg += `<defs>`;
       svg += `<radialGradient id="glow" cx="50%" cy="50%" r="50%">`;
       svg += `<stop offset="0%" stop-color="rgba(240,232,208,0.1)" />`;
@@ -415,12 +426,12 @@
       svg += `</radialGradient>`;
       svg += `</defs>`;
       
-      // Background circle (dark side)
+      // Dark side
       svg += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="#1a1a2e" stroke="#3d3d5c" stroke-width="1.5"/>`;
       
       if (illum > 0.005) {
         if (illum < 0.5) {
-          // Crescent
+          // Crescent: use arc for the terminator
           const xOffset = (1 - illum * 2) * r;
           svg += `<path d="M ${cx - r} ${cy - r} A ${r} ${r} 0 0 1 ${cx + r} ${cy - r} A ${r} ${r} 0 0 1 ${cx - r} ${cy + r} A ${r} ${r} 0 0 0 ${cx + xOffset} ${cy} L ${cx - r} ${cy - r} Z" fill="#f0e8d0" opacity="0.95"/>`;
         } else {
@@ -433,14 +444,12 @@
         }
       }
       
-      // Subtle texture
-      svg += `<circle cx="${cx - r*0.3}" cy="${cy - r*0.25}" r="${r*0.08}" fill="#e8dcc8" opacity="0.15"/>`;
-      svg += `<circle cx="${cx + r*0.25}" cy="${cy + r*0.2}" r="${r*0.06}" fill="#e8dcc8" opacity="0.1"/>`;
-      svg += `<circle cx="${cx + r*0.1}" cy="${cy - r*0.4}" r="${r*0.04}" fill="#e8dcc8" opacity="0.08"/>`;
+      // Texture
+      svg += `<circle cx="${cx - r*0.3}" cy="${cy - r*0.25}" r="${r*0.08}" fill="#e8dcc8" opacity="0.12"/>`;
+      svg += `<circle cx="${cx + r*0.25}" cy="${cy + r*0.2}" r="${r*0.06}" fill="#e8dcc8" opacity="0.08"/>`;
+      svg += `<circle cx="${cx + r*0.1}" cy="${cy - r*0.4}" r="${r*0.04}" fill="#e8dcc8" opacity="0.06"/>`;
       
-      // Glow
       svg += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="url(#glow)" />`;
-      
       svg += `</svg>`;
       return svg;
     }
@@ -450,7 +459,6 @@
       const lat = parseFloat(el.getAttribute('data-lat'));
       const lng = parseFloat(el.getAttribute('data-lng'));
       const place = el.getAttribute('place') || '';
-      const size = el.getAttribute('data-size') || 'full';
       
       if (isNaN(lat) || isNaN(lng)) {
         el.innerHTML = `<div class="ac-widget ac-widget--error">
@@ -461,26 +469,19 @@
       }
 
       try {
-        const phase = getMoonPhase(date || new Date(), lat, lng);
+        const phase = getMoonPhase(date || new Date());
         const illuminationPercent = Math.round(phase.illumination * 100);
         
         // Phase emojis
         const phaseEmojis = ['🌑', '🌒', '🌓', '🌔', '🌕', '🌖', '🌗', '🌘'];
         const emoji = phaseEmojis[phase.phaseIndex % 8];
         
-        // Build HTML
-        const iconSize = 80;
-        
         let html = `<div class="ac-widget">`;
         html += `<div class="ac-w-content">`;
         html += `<div class="ac-w-phase">`;
-        
-        // Moon icon
         html += `<div class="moon-icon">`;
-        html += renderMoonSVG(phase.illumination, iconSize);
+        html += renderMoonSVG(phase.illumination, 80);
         html += `</div>`;
-        
-        // Phase info
         html += `<div class="phase-info">`;
         html += `<div class="phase-label">${emoji} ${phase.phaseName}</div>`;
         html += `<div class="phase-detail">`;
@@ -489,15 +490,12 @@
         html += `</div>`;
         html += `</div>`;
         html += `</div>`;
-        
-        // Location
         if (place) {
           html += `<div class="ac-w-location">`;
           html += `<span class="loc-icon">📍</span>`;
           html += `<span class="loc-name">${place}</span>`;
           html += `</div>`;
         }
-        
         html += `</div>`;
         html += `</div>`;
         
@@ -512,17 +510,20 @@
     }
 
     // ----- Update date display -----
-    function updateDateDisplay() {
+    function updateDateDisplay(tz) {
       const now = new Date();
-      const options = { 
-        weekday: 'long', 
-        year: 'numeric', 
-        month: 'long', 
-        day: 'numeric',
-        timeZone: document.getElementById('timezoneSelect').value.split(',')[2] || 'UTC'
-      };
-      const dateStr = now.toLocaleDateString('en-US', options);
-      document.getElementById('dateDisplay').textContent = `📅 ${dateStr}`;
+      try {
+        const dateStr = now.toLocaleDateString('en-US', { 
+          weekday: 'long', 
+          year: 'numeric', 
+          month: 'long', 
+          day: 'numeric',
+          timeZone: tz || 'UTC'
+        });
+        document.getElementById('dateDisplay').textContent = `📅 ${dateStr}`;
+      } catch {
+        document.getElementById('dateDisplay').textContent = `📅 ${now.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}`;
+      }
     }
 
     // ----- Initialize widget with timezone -----
@@ -541,14 +542,25 @@
         widget.setAttribute('data-lng', lng);
         widget.setAttribute('place', place);
         
-        // Use the timezone to get current date
-        const tz = select.options[select.selectedIndex].getAttribute('data-tz') || 'UTC';
-        const now = new Date();
-        // Convert to the selected timezone
-        const dateInTz = new Date(now.toLocaleString('en-US', { timeZone: tz }));
+        // Get timezone from selected option
+        const option = select.options[select.selectedIndex];
+        let tz = 'UTC';
+        // Try to extract timezone from the option value or use GMT offset
+        const tzMatch = value.match(/GMT([+-]\d{1,2}(?::\d{2})?)/);
+        if (tzMatch) {
+          const offset = tzMatch[1];
+          const hours = parseInt(offset);
+          const mins = offset.includes(':') ? parseInt(offset.split(':')[1]) : 0;
+          const totalOffset = hours + (mins / 60);
+          tz = `Etc/GMT${totalOffset >= 0 ? '-' : '+'}${Math.abs(totalOffset)}`;
+        } else {
+          // Try to use IANA timezone from data attribute
+          const dataTz = option.getAttribute('data-tz');
+          if (dataTz) tz = dataTz;
+        }
         
-        renderWidget(widget, dateInTz);
-        updateDateDisplay();
+        renderWidget(widget, new Date());
+        updateDateDisplay(tz);
       }
     }
 
@@ -556,13 +568,11 @@
     document.addEventListener('DOMContentLoaded', function() {
       const select = document.getElementById('timezoneSelect');
       
-      // Initial render with default (New York)
-      const defaultOption = select.querySelector('option[value="40.7128,-74.0060,New York (EST)"]');
+      // Set default to GMT+0 (London)
+      const defaultOption = select.querySelector('option[value="51.5074,-0.1278,GMT+0 (London)"]');
       if (defaultOption) select.value = defaultOption.value;
       
       initWidgetWithTimezone();
-      
-      // Change handler
       select.addEventListener('change', initWidgetWithTimezone);
       
       // Auto-refresh every minute
