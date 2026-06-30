@@ -364,7 +364,7 @@
             cursor: pointer;
             transition: all 0.2s;
             border: 1px solid transparent;
-            min-height: 75px;
+            min-height: 80px;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -396,7 +396,7 @@
         }
         .month-day .day-illum {
             color: #8a847e;
-            font-size: 0.65rem;
+            font-size: 0.7rem;
             font-weight: 500;
         }
         .month-day .day-age {
@@ -405,7 +405,7 @@
         }
         .month-day .day-phase-name {
             color: #6a6460;
-            font-size: 0.5rem;
+            font-size: 0.55rem;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -423,16 +423,16 @@
         }
 
         @media (max-width: 600px) {
-            .month-day { min-height: 60px; padding: 0.3rem 0.1rem; }
+            .month-day { min-height: 65px; padding: 0.3rem 0.1rem; }
             .month-day .day-emoji { font-size: 1.3rem; }
             .month-day .day-number { font-size: 0.7rem; }
-            .month-day .day-illum { font-size: 0.55rem; }
-            .month-day .day-phase-name { font-size: 0.4rem; }
+            .month-day .day-illum { font-size: 0.6rem; }
+            .month-day .day-phase-name { font-size: 0.45rem; }
             .month-day .day-age { display: none; }
         }
 
         @media (max-width: 420px) {
-            .month-day { min-height: 50px; padding: 0.2rem 0.1rem; }
+            .month-day { min-height: 55px; padding: 0.2rem 0.1rem; }
             .month-day .day-emoji { font-size: 1rem; }
             .month-day .day-number { font-size: 0.6rem; }
             .month-day .day-illum { font-size: 0.5rem; }
@@ -591,19 +591,21 @@
         let currentLng = -0.1278;
         let currentView = 'day';
 
-        // --- Moon phase calculation (same algorithm, returning phase name) ---
+        // --- Moon phase calculation (PRECISE with 1 decimal place) ---
         function getMoonPhase(date) {
             const year = date.getUTCFullYear();
             const month = date.getUTCMonth() + 1;
             const day = date.getUTCDate();
             const hours = date.getUTCHours() + date.getUTCMinutes() / 60 + date.getUTCSeconds() / 3600;
 
+            // Julian Day
             let a = Math.floor((14 - month) / 12);
             let y = year + 4800 - a;
             let m = month + 12 * a - 3;
             let jd = day + Math.floor((153 * m + 2) / 5) + 365 * y + Math.floor(y / 4) - Math.floor(y / 100) + Math.floor(y / 400) - 32045;
             jd = jd + hours / 24 - 0.5;
 
+            // Known new moon: 2000-01-06 18:14 UTC = JD 2451550.09765
             const knownNewMoonJD = 2451550.09765;
             const synodicPeriod = 29.53058867;
 
@@ -611,11 +613,12 @@
             let age = daysSinceNewMoon % synodicPeriod;
             if (age < 0) age += synodicPeriod;
 
+            // Phase angle
             const phaseAngle = (age / synodicPeriod) * 2 * Math.PI;
             let illumination = (1 - Math.cos(phaseAngle)) / 2;
             illumination = Math.max(0, Math.min(1, illumination));
 
-            // More precise phase naming with full names
+            // Phase name with precise thresholds
             let name, emoji, shortName;
             const phase = age / synodicPeriod;
 
@@ -662,9 +665,16 @@
             };
         }
 
+        // --- Format illumination with 1 decimal place ---
+        function formatIllumination(value) {
+            if (value >= 1) return '100.0';
+            if (value <= 0) return '0.0';
+            return (value * 100).toFixed(1);
+        }
+
         // --- Render day view ---
         function renderDayView(phaseData, place, dateStr, isFuture) {
-            const percent = Math.round(phaseData.illumination * 100);
+            const percent = formatIllumination(phaseData.illumination);
 
             let html = `<div class="ac-widget">`;
             html += `<div class="moon-emoji">${phaseData.emoji}</div>`;
@@ -827,7 +837,7 @@
                 const dayNum = prevMonthLastDay - i;
                 const d = new Date(year, month - 1, dayNum, 12, 0, 0);
                 const phase = getMoonPhase(d);
-                const percent = Math.round(phase.illumination * 100);
+                const percent = formatIllumination(phase.illumination);
                 html += `<div class="month-day other-month" data-date="${d.toISOString()}">
                     <div class="day-number">${dayNum}</div>
                     <div class="day-emoji">${phase.emoji}</div>
@@ -840,7 +850,7 @@
             for (let dayNum = 1; dayNum <= daysInMonth; dayNum++) {
                 const d = new Date(year, month, dayNum, 12, 0, 0);
                 const phase = getMoonPhase(d);
-                const percent = Math.round(phase.illumination * 100);
+                const percent = formatIllumination(phase.illumination);
                 const isToday = d.getFullYear() === today.getFullYear() &&
                               d.getMonth() === today.getMonth() &&
                               d.getDate() === today.getDate();
@@ -869,7 +879,7 @@
             for (let dayNum = 1; dayNum <= remainingDays; dayNum++) {
                 const d = new Date(year, month + 1, dayNum, 12, 0, 0);
                 const phase = getMoonPhase(d);
-                const percent = Math.round(phase.illumination * 100);
+                const percent = formatIllumination(phase.illumination);
                 html += `<div class="month-day other-month" data-date="${d.toISOString()}">
                     <div class="day-number">${dayNum}</div>
                     <div class="day-emoji">${phase.emoji}</div>
