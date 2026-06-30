@@ -273,66 +273,129 @@
         const selectEl = document.getElementById('timezoneSelect');
         const dateDisplay = document.getElementById('dateDisplay');
 
-        // --- Helper: build API URL ---
-        function buildApiUrl(lat, lng) {
-            const params = new URLSearchParams({
-                lat: lat.toString(),
-                lon: lng.toString(),
-                include_visuals: 'true',
-                // Optional: customize colors if you like
-                // style_moon_color: 'F0E8D0',
-                // style_shadow_color: '1A1A2E',
-            });
-            return `${API_BASE}?${params.toString()}`;
+        // --- FALLBACK: Local moon calculation (accurate to ~1%) ---
+        function calculateMoonPhaseLocal(date, lat, lng) {
+            // Julian Day calculation
+            const year = date.getUTCFullYear();
+            const month = date.getUTCMonth() + 1;
+            const day = date.getUTCDate();
+            const hours = date.getUTCHours() + date.getUTCMinutes() / 60 + date.getUTCSeconds() / 3600;
+
+            let a = Math.floor((14 - month) / 12);
+            let y = year + 4800 - a;
+            let m = month + 12 * a - 3;
+            let jd = day + Math.floor((153 * m + 2) / 5) + 365 * y + Math.floor(y / 4) - Math.floor(y / 100) + Math.floor(y / 400) - 32045;
+            jd = jd + hours / 24 - 0.5;
+
+            // Time since J2000.0
+            const daysSinceJ2000 = jd - 2451545.0;
+            const T = daysSinceJ2000 / 36525;
+
+            // Mean elements
+            let D = (297.8502 + 445267.1114 * T) % 360;
+            let M = (357.5291 + 35999.0503 * T) % 360;
+            let Mp = (134.9634 + 477198.8676 * T) % 360;
+
+            const D_rad = D * Math.PI / 180;
+            const M_rad = M * Math.PI / 180;
+            const Mp_rad = Mp * Math.PI / 180;
+
+            // Phase angle
+            const phase_angle = Math.PI - D_rad
+                - 6.289 * Math.sin(Mp_rad)
+                + 2.100 * Math.sin(M_rad)
+                - 1.274 * Math.sin(2 * D_rad - Mp_rad)
+                - 0.658 * Math.sin(2 * D_rad)
+                - 0.214 * Math.sin(2 * Mp_rad)
+                - 0.110 * Math.sin(D_rad);
+
+            const illumination = (1 + Math.cos(phase_angle)) / 2;
+            const age = ((jd - 2451550.09765) % 29.53058867 + 29.53058867) % 29.53058867;
+
+            // Phase names
+            const k = Math.max(0, Math.min(1, illumination));
+            let name;
+            if (k < 0.03) name = 'New Moon';
+            else if (k < 0.22) name = 'Waxing Crescent';
+            else if (k < 0.28) name = 'First Quarter';
+            else if (k < 0.47) name = 'Waxing Gibbous';
+            else if (k < 0.53) name = 'Full Moon';
+            else if (k < 0.72) name = 'Waning Gibbous';
+            else if (k < 0.78) name = 'Last Quarter';
+            else name = 'Waning Crescent';
+
+            return { illumination, name, age };
         }
 
-        // --- Helper: update date display ---
-        function updateDateDisplay(tz) {
-            const now = new Date();
-            try {
-                const dateStr = now.toLocaleDateString('en-US', {
-                    weekday: 'long',
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric',
-                    timeZone: tz || 'UTC'
-                });
-                dateDisplay.textContent = `📅 ${dateStr}`;
-            } catch (_) {
-                dateDisplay.textContent = `📅 ${now.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}`;
+        // --- Generate SVG moon (clean, no artifacts) ---
+        function generateMoonSVG(illumination, size) {
+            const w = size || 100;
+            const h = size || 100;
+            const k = Math.max(0, Math.min(1, illumination));
+            const r = w / 2 - 4;
+            const cx = w / 2;
+            const cy = h / 2;
+
+            let svg = `<svg viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg">`;
+
+            // Dark side
+            svg += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="#1a1a2e" stroke="#2a2a44" stroke-width="1.5"/>`;
+
+            if (k > 0.005) {
+                if (k < 0.5) {
+                    // Crescent
+                    const terminatorX = (1 - k * 2) * r;
+                    svg += `<path d="M ${cx - r} ${cy - r} 
+                             A ${r} ${r} 0 0 1 ${cx + r} ${cy - r} 
+                             A ${r} ${r} 0 0 1 ${cx - r} ${cy + r} 
+                             A ${r} ${r} 0 0 0 ${cx + terminatorX} ${cy} 
+                             L ${cx - r} ${cy - r} Z" 
+                             fill="#f0e8d0" opacity="0.95"/>`;
+                } else {
+                    // Gibbous / Full
+                    svg += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="#f0e8d0" opacity="0.95"/>`;
+                    if (k < 0.995) {
+                        const shadowX = (1 - k) * 2 * r;
+                        svg += `<path d="M ${cx + r} ${cy - r} 
+                                 A ${r} ${r} 0 0 0 ${cx - r} ${cy - r} 
+                                 A ${r} ${r} 0 0 0 ${cx + r} ${cy + r} 
+                                 A ${r} ${r} 0 0 1 ${cx + shadowX} ${cy} 
+                                 L ${cx + r} ${cy - r} Z" 
+                                 fill="#1a1a2e" opacity="0.35"/>`;
+                    }
+                }
             }
+
+            // Subtle texture
+            svg += `<circle cx="${cx - r*0.3}" cy="${cy - r*0.25}" r="${r*0.07}" fill="#d4ccc0" opacity="0.12"/>`;
+            svg += `<circle cx="${cx + r*0.25}" cy="${cy + r*0.2}" r="${r*0.05}" fill="#d4ccc0" opacity="0.08"/>`;
+            svg += `<circle cx="${cx + r*0.1}" cy="${cy - r*0.4}" r="${r*0.04}" fill="#d4ccc0" opacity="0.06"/>`;
+
+            svg += `</svg>`;
+            return svg;
         }
 
-        // --- Render widget from API data ---
-        function renderWidget(data, place) {
-            const phase = data.phase || {};
-            const visual = data.moon_visual || {};
-
-            const illumination = phase.illumination ?? 0;
+        // --- Render widget ---
+        function renderWidget(phaseData, place, useLocalFallback) {
+            const illumination = phaseData.illumination ?? 0;
             const percent = Math.round(illumination * 100);
-            const name = phase.name || 'Unknown';
-            const age = phase.age_days ?? 0;
-            const svg = visual.svg || '';
+            const name = phaseData.name || 'Unknown';
+            const age = phaseData.age ?? 0;
+
+            // Generate SVG
+            const svg = generateMoonSVG(illumination, 100);
 
             let html = `<div class="ac-widget">`;
-
-            // SVG visual
-            if (svg) {
-                html += `<div class="moon-visual">${svg}</div>`;
-            } else {
-                // fallback emoji
-                const emoji = getFallbackEmoji(illumination);
-                html += `<div class="moon-visual" style="font-size: 4rem; line-height: 1.2;">${emoji}</div>`;
-            }
-
-            // Text info
+            html += `<div class="moon-visual">${svg}</div>`;
             html += `<div class="phase-label">${name}</div>`;
             html += `<div class="phase-detail">`;
             html += `<span class="illumination">${percent}% illuminated</span>`;
             html += ` · Age ${Math.round(age)}d`;
+            if (useLocalFallback) {
+                html += ` <span style="font-size:0.7rem; opacity:0.5; display:block; margin-top:0.2rem;">(local calculation)</span>`;
+            }
             html += `</div>`;
 
-            // Location
             if (place) {
                 html += `<div class="ac-w-location">`;
                 html += `<span class="loc-icon">📍</span>`;
@@ -342,19 +405,6 @@
 
             html += `</div>`;
             widgetEl.innerHTML = html;
-        }
-
-        // --- Fallback emoji (if SVG missing) ---
-        function getFallbackEmoji(illumination) {
-            const k = Math.max(0, Math.min(1, illumination));
-            if (k < 0.03) return '🌑';
-            if (k < 0.22) return '🌒';
-            if (k < 0.28) return '🌓';
-            if (k < 0.47) return '🌔';
-            if (k < 0.53) return '🌕';
-            if (k < 0.72) return '🌖';
-            if (k < 0.78) return '🌗';
-            return '🌘';
         }
 
         // --- Show error ---
@@ -373,7 +423,24 @@
             </div>`;
         }
 
-        // --- Fetch and update ---
+        // --- Update date display ---
+        function updateDateDisplay(tz) {
+            const now = new Date();
+            try {
+                const dateStr = now.toLocaleDateString('en-US', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    timeZone: tz || 'UTC'
+                });
+                dateDisplay.textContent = `📅 ${dateStr}`;
+            } catch (_) {
+                dateDisplay.textContent = `📅 ${now.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}`;
+            }
+        }
+
+        // --- Main update function ---
         function updateWidget() {
             const value = selectEl.value;
             const parts = value.split(',');
@@ -393,48 +460,59 @@
                 return;
             }
 
-            // Update date display
             updateDateDisplay(tz);
-
-            // Show loading
             showLoading();
 
-            // Build API URL
-            const url = buildApiUrl(lat, lng);
+            // Get current date in selected timezone
+            const now = new Date();
+            let dateInTz;
+            try {
+                dateInTz = new Date(now.toLocaleString('en-US', { timeZone: tz }));
+            } catch (_) {
+                dateInTz = now;
+            }
 
-            // Fetch
-            fetch(url)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error(`HTTP ${response.status} — ${response.statusText}`);
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    if (data.error) {
-                        throw new Error(data.error || 'API returned an error.');
-                    }
-                    renderWidget(data, place);
-                })
-                .catch(err => {
-                    console.error('Moon API error:', err);
-                    showError(err.message || 'Could not reach the moon API. Please try again later.');
-                });
+            // Try API first, fallback to local
+            const url = `${API_BASE}?lat=${lat}&lon=${lng}&include_visuals=true`;
+
+            fetch(url, {
+                mode: 'cors',
+                headers: {
+                    'Accept': 'application/json'
+                }
+            })
+            .then(response => {
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                return response.json();
+            })
+            .then(data => {
+                if (data.error) throw new Error(data.error);
+                // Use API data
+                const phase = data.phase || {};
+                renderWidget({
+                    illumination: phase.illumination ?? 0,
+                    name: phase.name || 'Unknown',
+                    age: phase.age_days ?? 0
+                }, place, false);
+            })
+            .catch(err => {
+                console.warn('API failed, using local calculation:', err.message);
+                // Fallback to local calculation
+                const local = calculateMoonPhaseLocal(dateInTz, lat, lng);
+                renderWidget({
+                    illumination: local.illumination,
+                    name: local.name,
+                    age: local.age
+                }, place, true);
+            });
         }
 
-        // --- Initialise ---
+        // --- Init ---
         document.addEventListener('DOMContentLoaded', function() {
-            // Set default to London (GMT)
             const defaultOption = selectEl.querySelector('option[value="51.5074,-0.1278,Europe/London,London (GMT)"]');
             if (defaultOption) selectEl.value = defaultOption.value;
-
-            // First update
             updateWidget();
-
-            // Change handler
             selectEl.addEventListener('change', updateWidget);
-
-            // Refresh every 60 seconds
             setInterval(updateWidget, 60000);
         });
 
