@@ -35,7 +35,6 @@
             box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6);
         }
 
-        /* --- Header --- */
         .widget-header {
             text-align: center;
             margin-bottom: 1.8rem;
@@ -52,7 +51,6 @@
             margin-top: 0.3rem;
         }
 
-        /* --- Selector --- */
         .timezone-selector {
             margin-bottom: 1.8rem;
         }
@@ -84,7 +82,6 @@
             color: #f0e8d0;
         }
 
-        /* --- Widget --- */
         .ac-widget-moon {
             display: block;
             width: 100%;
@@ -102,21 +99,12 @@
             border-color: rgba(255, 255, 255, 0.12);
         }
 
-        /* --- Moon Visual (SVG from API) --- */
-        .moon-visual {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin-bottom: 0.8rem;
+        /* --- Moon Display (emoji + text) --- */
+        .moon-emoji {
+            font-size: 5rem;
+            line-height: 1.2;
+            margin-bottom: 0.3rem;
         }
-        .moon-visual svg {
-            width: 100px;
-            height: 100px;
-            display: block;
-            filter: drop-shadow(0 0 30px rgba(240, 232, 208, 0.12));
-        }
-
-        /* --- Text Info --- */
         .phase-label {
             font-weight: 600;
             font-size: 1.8rem;
@@ -132,8 +120,13 @@
             font-weight: 500;
             color: #e8dcc8;
         }
+        .phase-detail .source {
+            font-size: 0.7rem;
+            opacity: 0.4;
+            display: block;
+            margin-top: 0.2rem;
+        }
 
-        /* --- Location --- */
         .ac-w-location {
             font-size: 0.9rem;
             color: #8a847e;
@@ -145,15 +138,9 @@
             margin-top: 0.8rem;
             border-top: 1px solid rgba(255, 255, 255, 0.06);
         }
-        .ac-w-location .loc-icon {
-            opacity: 0.5;
-        }
-        .ac-w-location .loc-name {
-            color: #b0a89e;
-            font-weight: 450;
-        }
+        .ac-w-location .loc-icon { opacity: 0.5; }
+        .ac-w-location .loc-name { color: #b0a89e; font-weight: 450; }
 
-        /* --- Error & Loading --- */
         .ac-widget--error,
         .ac-widget--loading {
             background: rgba(255, 200, 100, 0.05);
@@ -179,11 +166,10 @@
         }
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* --- Responsive --- */
         @media (max-width: 480px) {
             .container { padding: 1.2rem; }
             .ac-widget { padding: 1.5rem 1rem; }
-            .moon-visual svg { width: 80px; height: 80px; }
+            .moon-emoji { font-size: 4rem; }
             .phase-label { font-size: 1.4rem; }
             .widget-header h1 { font-size: 1.4rem; }
         }
@@ -266,16 +252,14 @@
     (function() {
         'use strict';
 
-        const API_BASE = 'https://www.freeastroapi.com/api/v1/moon/phase';
-
         // --- DOM refs ---
         const widgetEl = document.querySelector('.ac-widget-moon');
         const selectEl = document.getElementById('timezoneSelect');
         const dateDisplay = document.getElementById('dateDisplay');
 
-        // --- FALLBACK: Local moon calculation (accurate to ~1%) ---
-        function calculateMoonPhaseLocal(date, lat, lng) {
-            // Julian Day calculation
+        // --- Moon phase calculation (fixed) ---
+        function calculateMoonPhase(date) {
+            // Julian Day
             const year = date.getUTCFullYear();
             const month = date.getUTCMonth() + 1;
             const day = date.getUTCDate();
@@ -287,9 +271,9 @@
             let jd = day + Math.floor((153 * m + 2) / 5) + 365 * y + Math.floor(y / 4) - Math.floor(y / 100) + Math.floor(y / 400) - 32045;
             jd = jd + hours / 24 - 0.5;
 
-            // Time since J2000.0
-            const daysSinceJ2000 = jd - 2451545.0;
-            const T = daysSinceJ2000 / 36525;
+            // Days since J2000.0
+            const days = jd - 2451545.0;
+            const T = days / 36525;
 
             // Mean elements
             let D = (297.8502 + 445267.1114 * T) % 360;
@@ -300,7 +284,7 @@
             const M_rad = M * Math.PI / 180;
             const Mp_rad = Mp * Math.PI / 180;
 
-            // Phase angle
+            // Phase angle (angle between Sun and Moon)
             const phase_angle = Math.PI - D_rad
                 - 6.289 * Math.sin(Mp_rad)
                 + 2.100 * Math.sin(M_rad)
@@ -309,90 +293,45 @@
                 - 0.214 * Math.sin(2 * Mp_rad)
                 - 0.110 * Math.sin(D_rad);
 
-            const illumination = (1 + Math.cos(phase_angle)) / 2;
-            const age = ((jd - 2451550.09765) % 29.53058867 + 29.53058867) % 29.53058867;
+            // Illumination (0 = new, 1 = full)
+            let illumination = (1 + Math.cos(phase_angle)) / 2;
+            illumination = Math.max(0, Math.min(1, illumination));
 
-            // Phase names
-            const k = Math.max(0, Math.min(1, illumination));
+            // Moon age (days since last new moon)
+            const newMoonJD = 2451550.09765;
+            const synodicPeriod = 29.53058867;
+            let age = (jd - newMoonJD) % synodicPeriod;
+            if (age < 0) age += synodicPeriod;
+
+            // Phase name based on illumination
+            const k = illumination;
             let name;
-            if (k < 0.03) name = 'New Moon';
-            else if (k < 0.22) name = 'Waxing Crescent';
-            else if (k < 0.28) name = 'First Quarter';
-            else if (k < 0.47) name = 'Waxing Gibbous';
-            else if (k < 0.53) name = 'Full Moon';
-            else if (k < 0.72) name = 'Waning Gibbous';
-            else if (k < 0.78) name = 'Last Quarter';
-            else name = 'Waning Crescent';
+            let emoji;
+            if (k < 0.03) { name = 'New Moon'; emoji = '🌑'; }
+            else if (k < 0.22) { name = 'Waxing Crescent'; emoji = '🌒'; }
+            else if (k < 0.28) { name = 'First Quarter'; emoji = '🌓'; }
+            else if (k < 0.47) { name = 'Waxing Gibbous'; emoji = '🌔'; }
+            else if (k < 0.53) { name = 'Full Moon'; emoji = '🌕'; }
+            else if (k < 0.72) { name = 'Waning Gibbous'; emoji = '🌖'; }
+            else if (k < 0.78) { name = 'Last Quarter'; emoji = '🌗'; }
+            else { name = 'Waning Crescent'; emoji = '🌘'; }
 
-            return { illumination, name, age };
-        }
-
-        // --- Generate SVG moon (clean, no artifacts) ---
-        function generateMoonSVG(illumination, size) {
-            const w = size || 100;
-            const h = size || 100;
-            const k = Math.max(0, Math.min(1, illumination));
-            const r = w / 2 - 4;
-            const cx = w / 2;
-            const cy = h / 2;
-
-            let svg = `<svg viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg">`;
-
-            // Dark side
-            svg += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="#1a1a2e" stroke="#2a2a44" stroke-width="1.5"/>`;
-
-            if (k > 0.005) {
-                if (k < 0.5) {
-                    // Crescent
-                    const terminatorX = (1 - k * 2) * r;
-                    svg += `<path d="M ${cx - r} ${cy - r} 
-                             A ${r} ${r} 0 0 1 ${cx + r} ${cy - r} 
-                             A ${r} ${r} 0 0 1 ${cx - r} ${cy + r} 
-                             A ${r} ${r} 0 0 0 ${cx + terminatorX} ${cy} 
-                             L ${cx - r} ${cy - r} Z" 
-                             fill="#f0e8d0" opacity="0.95"/>`;
-                } else {
-                    // Gibbous / Full
-                    svg += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="#f0e8d0" opacity="0.95"/>`;
-                    if (k < 0.995) {
-                        const shadowX = (1 - k) * 2 * r;
-                        svg += `<path d="M ${cx + r} ${cy - r} 
-                                 A ${r} ${r} 0 0 0 ${cx - r} ${cy - r} 
-                                 A ${r} ${r} 0 0 0 ${cx + r} ${cy + r} 
-                                 A ${r} ${r} 0 0 1 ${cx + shadowX} ${cy} 
-                                 L ${cx + r} ${cy - r} Z" 
-                                 fill="#1a1a2e" opacity="0.35"/>`;
-                    }
-                }
-            }
-
-            // Subtle texture
-            svg += `<circle cx="${cx - r*0.3}" cy="${cy - r*0.25}" r="${r*0.07}" fill="#d4ccc0" opacity="0.12"/>`;
-            svg += `<circle cx="${cx + r*0.25}" cy="${cy + r*0.2}" r="${r*0.05}" fill="#d4ccc0" opacity="0.08"/>`;
-            svg += `<circle cx="${cx + r*0.1}" cy="${cy - r*0.4}" r="${r*0.04}" fill="#d4ccc0" opacity="0.06"/>`;
-
-            svg += `</svg>`;
-            return svg;
+            return { illumination, name, emoji, age };
         }
 
         // --- Render widget ---
-        function renderWidget(phaseData, place, useLocalFallback) {
-            const illumination = phaseData.illumination ?? 0;
-            const percent = Math.round(illumination * 100);
-            const name = phaseData.name || 'Unknown';
-            const age = phaseData.age ?? 0;
-
-            // Generate SVG
-            const svg = generateMoonSVG(illumination, 100);
+        function renderWidget(phaseData, place, source) {
+            const percent = Math.round(phaseData.illumination * 100);
+            const sourceText = source ? ` · ${source}` : '';
 
             let html = `<div class="ac-widget">`;
-            html += `<div class="moon-visual">${svg}</div>`;
-            html += `<div class="phase-label">${name}</div>`;
+            html += `<div class="moon-emoji">${phaseData.emoji}</div>`;
+            html += `<div class="phase-label">${phaseData.name}</div>`;
             html += `<div class="phase-detail">`;
             html += `<span class="illumination">${percent}% illuminated</span>`;
-            html += ` · Age ${Math.round(age)}d`;
-            if (useLocalFallback) {
-                html += ` <span style="font-size:0.7rem; opacity:0.5; display:block; margin-top:0.2rem;">(local calculation)</span>`;
+            html += ` · Age ${Math.round(phaseData.age)}d`;
+            if (source) {
+                html += `<span class="source">${source}</span>`;
             }
             html += `</div>`;
 
@@ -440,7 +379,7 @@
             }
         }
 
-        // --- Main update function ---
+        // --- Main update ---
         function updateWidget() {
             const value = selectEl.value;
             const parts = value.split(',');
@@ -463,48 +402,17 @@
             updateDateDisplay(tz);
             showLoading();
 
-            // Get current date in selected timezone
-            const now = new Date();
+            // Get date in timezone
             let dateInTz;
             try {
-                dateInTz = new Date(now.toLocaleString('en-US', { timeZone: tz }));
+                dateInTz = new Date(new Date().toLocaleString('en-US', { timeZone: tz }));
             } catch (_) {
-                dateInTz = now;
+                dateInTz = new Date();
             }
 
-            // Try API first, fallback to local
-            const url = `${API_BASE}?lat=${lat}&lon=${lng}&include_visuals=true`;
-
-            fetch(url, {
-                mode: 'cors',
-                headers: {
-                    'Accept': 'application/json'
-                }
-            })
-            .then(response => {
-                if (!response.ok) throw new Error(`HTTP ${response.status}`);
-                return response.json();
-            })
-            .then(data => {
-                if (data.error) throw new Error(data.error);
-                // Use API data
-                const phase = data.phase || {};
-                renderWidget({
-                    illumination: phase.illumination ?? 0,
-                    name: phase.name || 'Unknown',
-                    age: phase.age_days ?? 0
-                }, place, false);
-            })
-            .catch(err => {
-                console.warn('API failed, using local calculation:', err.message);
-                // Fallback to local calculation
-                const local = calculateMoonPhaseLocal(dateInTz, lat, lng);
-                renderWidget({
-                    illumination: local.illumination,
-                    name: local.name,
-                    age: local.age
-                }, place, true);
-            });
+            // Calculate locally (reliable, no API dependency)
+            const phase = calculateMoonPhase(dateInTz);
+            renderWidget(phase, place, '');
         }
 
         // --- Init ---
