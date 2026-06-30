@@ -3,182 +3,607 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Moon Widget – Astro Charts Clone</title>
-  <!-- Local CSS (optional, you can also use the CDN version below) -->
-  <!-- <link rel="stylesheet" href="widget.css"> -->
-  <!-- Or use the original CSS from Astro-Charts for exact styling -->
-  <link rel="stylesheet" href="https://astro-charts.com/static/widget.css">
+  <title>Moon Widget - Self-Contained</title>
   <style>
-    /* demo page styling */
+    /* Reset and base */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
     body {
-      font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-      background: #f5f3f0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+      background: #f0edf0;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       min-height: 100vh;
-      margin: 2rem;
-      gap: 3rem;
+      padding: 2rem;
+      gap: 2rem;
     }
     .demo-grid {
       display: flex;
       flex-wrap: wrap;
-      gap: 2.5rem;
+      gap: 2rem;
       justify-content: center;
-      max-width: 1000px;
+      max-width: 1200px;
       width: 100%;
     }
     .demo-card {
       background: white;
       border-radius: 1.5rem;
-      padding: 1.5rem 1.5rem 1rem;
-      box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+      padding: 1.5rem;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.06);
       flex: 1 1 300px;
       min-width: 280px;
+      max-width: 400px;
     }
     .demo-card h3 {
-      margin-top: 0;
-      font-weight: 400;
-      color: #3d3a36;
-      letter-spacing: 0.3px;
-      border-bottom: 1px solid #eae7e2;
-      padding-bottom: 0.6rem;
-      margin-bottom: 1.2rem;
-    }
-    .demo-card .ac-widget-moon {
-      margin: 0 auto;
+      font-weight: 500;
+      color: #2d2a27;
+      margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid #eeeae5;
     }
     .note {
-      color: #6b6560;
-      font-size: 0.9rem;
-      background: #edeae5;
-      padding: 0.5rem 1.2rem;
-      border-radius: 40px;
-      margin-top: 0.5rem;
+      font-size: 0.8rem;
+      color: #7a7570;
+      margin-top: 0.8rem;
+      text-align: center;
+      background: #f5f2ee;
+      padding: 0.3rem 0.8rem;
+      border-radius: 20px;
+      display: inline-block;
     }
     hr {
       width: 80%;
       border: 0;
       border-top: 2px dashed #d6d0c8;
-      margin: 2rem 0;
-    }
-    code {
-      background: #f0ede8;
-      padding: 0.2rem 0.6rem;
-      border-radius: 12px;
-      font-size: 0.85rem;
+      margin: 1.5rem 0;
     }
     .footer {
-      margin-top: 2rem;
+      color: #6b6560;
       font-size: 0.9rem;
-      color: #5f5a55;
+      text-align: center;
     }
-    a {
-      color: #3d5a80;
+    .footer a {
+      color: #4a6a8a;
       text-decoration: none;
     }
-    a:hover {
+    .footer a:hover {
       text-decoration: underline;
+    }
+
+    /* ===== WIDGET STYLES ===== */
+    .ac-widget-moon {
+      display: block;
+      width: 100%;
+    }
+    
+    .ac-widget {
+      background: #ffffff;
+      border-radius: 20px;
+      padding: 1.2rem 1rem;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+      transition: all 0.2s;
+      width: 100%;
+    }
+    
+    .ac-widget:hover {
+      box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+    }
+    
+    .ac-w-content {
+      display: flex;
+      flex-direction: column;
+      gap: 0.8rem;
+    }
+    
+    /* Moon phase display */
+    .ac-w-phase {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    
+    .moon-icon {
+      flex-shrink: 0;
+      width: 64px;
+      height: 64px;
+      position: relative;
+    }
+    
+    .moon-icon svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+    
+    .phase-info {
+      flex: 1;
+      min-width: 0;
+    }
+    
+    .phase-label {
+      font-weight: 600;
+      font-size: 1.1rem;
+      color: #1a1a1a;
+      letter-spacing: -0.3px;
+    }
+    
+    .phase-detail {
+      font-size: 0.85rem;
+      color: #6b6560;
+      margin-top: 0.15rem;
+    }
+    
+    .phase-detail .illumination {
+      font-weight: 500;
+      color: #4a4540;
+    }
+    
+    /* Location */
+    .ac-w-location {
+      font-size: 0.8rem;
+      color: #8a847e;
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+      padding-top: 0.4rem;
+      border-top: 1px solid #f0ede8;
+    }
+    
+    .ac-w-location .loc-icon {
+      opacity: 0.5;
+    }
+    
+    .ac-w-location .loc-name {
+      font-weight: 450;
+    }
+    
+    /* Compact mode */
+    [data-size="compact"] .ac-widget {
+      padding: 0.6rem 0.8rem;
+      border-radius: 40px;
+      display: flex;
+      align-items: center;
+    }
+    
+    [data-size="compact"] .ac-w-content {
+      flex-direction: row;
+      align-items: center;
+      gap: 0.8rem;
+      width: 100%;
+    }
+    
+    [data-size="compact"] .ac-w-phase {
+      gap: 0.6rem;
+      flex: 1;
+    }
+    
+    [data-size="compact"] .moon-icon {
+      width: 44px;
+      height: 44px;
+    }
+    
+    [data-size="compact"] .phase-label {
+      font-size: 0.9rem;
+    }
+    
+    [data-size="compact"] .phase-detail {
+      font-size: 0.75rem;
+    }
+    
+    [data-size="compact"] .ac-w-location {
+      border-top: 0;
+      padding-top: 0;
+      font-size: 0.7rem;
+      padding-left: 0.6rem;
+      border-left: 1px solid #e8e4df;
+    }
+    
+    /* Error state */
+    .ac-widget--error {
+      background: #fcf8f5;
+      border: 1px solid #f0e3d8;
+      color: #7a5e4a;
+      padding: 1.2rem;
+      border-radius: 20px;
+      text-align: center;
+      font-size: 0.9rem;
+    }
+    
+    .ac-w-foot {
+      font-size: 0.75rem;
+      opacity: 0.6;
+      margin-top: 0.3rem;
+    }
+    
+    /* Responsive */
+    @media (max-width: 480px) {
+      .ac-widget {
+        padding: 0.8rem;
+        border-radius: 16px;
+      }
+      .moon-icon {
+        width: 48px;
+        height: 48px;
+      }
+      .phase-label {
+        font-size: 0.95rem;
+      }
+      [data-size="compact"] .ac-widget {
+        border-radius: 30px;
+        padding: 0.5rem 0.7rem;
+      }
+      [data-size="compact"] .moon-icon {
+        width: 36px;
+        height: 36px;
+      }
     }
   </style>
 </head>
 <body>
 
-  <h2>🌙 Moon Widget · Astro Charts style</h2>
-  <p style="color: #4a4540; max-width: 600px; text-align: center;">
-    Full card & compact strip versions – using the same API and CSS as the original widget.
+  <h2>🌙 Moon Phase Widget</h2>
+  <p style="color: #5a5550; text-align: center; max-width: 500px;">
+    Self-contained moon phase display with full and compact styles
   </p>
 
   <div class="demo-grid">
 
-    <!-- FULL (editorial card) -->
+    <!-- FULL CARD -->
     <div class="demo-card">
-      <h3>📰 Full · New York</h3>
+      <h3>📰 Full Card</h3>
       <div class="ac-widget-moon"
-        geo_pk="17"
-        place="New York City, New York, United States"
+        data-lat="40.7128"
+        data-lng="-74.0060"
+        place="New York City"
         data-size="full">
       </div>
-      <div class="note">← data-size="full"</div>
+      <div style="text-align: center; margin-top: 0.5rem;">
+        <span class="note">data-size="full"</span>
+      </div>
     </div>
 
-    <!-- COMPACT (sidebar strip) -->
+    <!-- COMPACT -->
     <div class="demo-card">
-      <h3>📏 Compact · New York</h3>
+      <h3>📏 Compact Strip</h3>
       <div class="ac-widget-moon"
-        geo_pk="17"
-        place="New York City, New York, United States"
+        data-lat="40.7128"
+        data-lng="-74.0060"
+        place="New York"
         data-size="compact">
       </div>
-      <div class="note">← data-size="compact"</div>
-    </div>
-
-    <!-- another example with different location (London) -->
-    <div class="demo-card">
-      <h3>🇬🇧 London · compact</h3>
-      <div class="ac-widget-moon"
-        geo_pk="10"
-        place="London, United Kingdom"
-        data-size="compact">
+      <div style="text-align: center; margin-top: 0.5rem;">
+        <span class="note">data-size="compact"</span>
       </div>
-      <div class="note">geo_pk="10" · compact</div>
     </div>
 
-    <!-- example with lat/lng (Tokyo) -->
+    <!-- LONDON -->
     <div class="demo-card">
-      <h3>🗼 Tokyo · full</h3>
+      <h3>🇬🇧 London</h3>
+      <div class="ac-widget-moon"
+        data-lat="51.5074"
+        data-lng="-0.1278"
+        place="London, UK"
+        data-size="full">
+      </div>
+      <div style="text-align: center; margin-top: 0.5rem;">
+        <span class="note">Full card · London</span>
+      </div>
+    </div>
+
+    <!-- TOKYO compact -->
+    <div class="demo-card">
+      <h3>🗼 Tokyo</h3>
       <div class="ac-widget-moon"
         data-lat="35.6762"
         data-lng="139.6503"
         place="Tokyo, Japan"
-        data-size="full">
+        data-size="compact">
       </div>
-      <div class="note">using lat/lng instead of geo_pk</div>
+      <div style="text-align: center; margin-top: 0.5rem;">
+        <span class="note">Compact · Tokyo</span>
+      </div>
     </div>
 
   </div>
 
   <hr>
 
-  <div style="max-width: 700px; background: #faf8f6; padding: 1.5rem 2rem; border-radius: 20px;">
+  <div style="max-width: 700px; background: #faf8f6; padding: 1.5rem 2rem; border-radius: 20px; width: 100%;">
     <h4 style="margin-top: 0;">📦 How it works</h4>
-    <p>This is a self-contained copy of the <code>widget-moon.js</code> script from Astro-Charts.<br>
-    It fetches moon phase data from <code>https://astro-charts.com/tools/widget_html/moon/</code> and injects the HTML.</p>
+    <p>This is a <strong>self-contained</strong> moon widget that:</p>
+    <ul style="padding-left: 1.2rem; line-height: 1.8;">
+      <li>Calculates moon phase based on <strong>latitude/longitude</strong> and current date</li>
+      <li>Renders a <strong>visual moon</strong> using SVG with accurate illumination</li>
+      <li>Supports <strong>full</strong> (card) and <strong>compact</strong> (strip) layouts</li>
+      <li>Auto-initializes on <code>.ac-widget-moon</code> elements</li>
+      <li>No external API calls needed — <strong>works offline</strong></li>
+    </ul>
     <p><strong>Attributes:</strong></p>
-    <ul style="padding-left: 1.2rem; line-height: 1.6;">
-      <li><code>geo_pk</code> – Astro-Charts location ID (preferred)</li>
-      <li><code>data-lat</code> + <code>data-lng</code> – fallback latitude/longitude</li>
-      <li><code>data-size</code> – <code>"full"</code> or <code>"compact"</code></li>
+    <ul style="padding-left: 1.2rem; line-height: 1.8;">
+      <li><code>data-lat</code> + <code>data-lng</code> – location coordinates (required)</li>
       <li><code>place</code> – display name (optional)</li>
+      <li><code>data-size</code> – <code>"full"</code> or <code>"compact"</code></li>
     </ul>
-    <p><strong>Files in this repo:</strong></p>
-    <ul style="padding-left: 1.2rem;">
-      <li><code>index.html</code> – this demo page</li>
-      <li><code>widget-moon.js</code> – the exact widget logic (minified, IIFE)</li>
-      <li><code>widget.css</code> – (optional) local styles, or you can use the CDN version</li>
-      <li><code>README.md</code> – instructions & credits</li>
-    </ul>
-    <p style="margin-bottom: 0;">✨ The widget auto-initializes on <code>.ac-widget-moon</code> elements.</p>
+    <p style="margin-bottom: 0;">✨ The widget automatically finds all <code>.ac-widget-moon</code> elements on the page.</p>
   </div>
 
   <div class="footer">
-    ⚡ Powered by <a href="https://astro-charts.com" target="_blank">Astro-Charts</a> · 
-    Widget code mirror for demonstration &amp; offline use.
+    ⚡ Self-contained moon widget · No external dependencies
   </div>
 
   <!-- ========== WIDGET SCRIPT ========== -->
-  <!-- 
-    You can either use the original CDN script:
-    <script src="https://astro-charts.com/static/widget-moon.js"></script>
-    
-    Or host it locally (recommended for this repo):
-  -->
-  <script src="widget-moon.js"></script>
-  <!-- 
-    The local widget-moon.js is an exact copy of the original, 
-    but with the endpoint pointing to astro-charts.com (CORS).
-  -->
+  <script>
+    (function() {
+      'use strict';
+
+      // ----- Moon phase calculation -----
+      function getMoonPhase(date, lat, lng) {
+        // Based on Jean Meeus astronomical algorithms
+        const d = date || new Date();
+        const year = d.getUTCFullYear();
+        const month = d.getUTCMonth() + 1;
+        const day = d.getUTCDate();
+        const hours = d.getUTCHours() + d.getUTCMinutes() / 60 + d.getUTCSeconds() / 3600;
+
+        // Calculate Julian Day Number
+        let a = Math.floor((14 - month) / 12);
+        let y = year + 4800 - a;
+        let m = month + 12 * a - 3;
+        let jdn = day + Math.floor((153 * m + 2) / 5) + 365 * y + Math.floor(y / 4) - Math.floor(y / 100) + Math.floor(y / 400) - 32045;
+        let jd = jdn + hours / 24 - 0.5;
+
+        // Time since J2000.0 (in days)
+        const T = (jd - 2451545.0) / 36525;
+
+        // Moon's mean longitude (degrees)
+        const L_prime = 218.3165 + 481267.8813 * T;
+        // Moon's mean elongation (degrees)
+        const D = 297.8502 + 445267.1114 * T;
+        // Sun's mean anomaly (degrees)
+        const M = 357.5291 + 35999.0503 * T;
+        // Moon's mean anomaly (degrees)
+        const M_prime = 134.9634 + 477198.8676 * T;
+        // Moon's argument of latitude (degrees)
+        const F = 93.2720 + 483202.0175 * T;
+
+        // Convert to radians
+        const D_rad = D * Math.PI / 180;
+        const M_rad = M * Math.PI / 180;
+        const M_prime_rad = M_prime * Math.PI / 180;
+        const F_rad = F * Math.PI / 180;
+
+        // Ecliptic longitude of the Moon (degrees)
+        let lambda_moon = L_prime + 6.289 * Math.sin(M_prime_rad) 
+          - 1.274 * Math.sin((2 * D - M_prime_rad)) 
+          + 0.658 * Math.sin(2 * D_rad) 
+          - 0.186 * Math.sin(M_rad) 
+          - 0.059 * Math.sin((2 * D - 2 * M_prime_rad)) 
+          - 0.057 * Math.sin((D - M_prime_rad)) 
+          + 0.053 * Math.sin((D + M_prime_rad)) 
+          + 0.046 * Math.sin((2 * D - M_rad)) 
+          + 0.041 * Math.sin((2 * D + M_prime_rad)) 
+          - 0.035 * Math.sin(M_prime_rad) 
+          - 0.031 * Math.sin((2 * F - 2 * D_rad));
+
+        // Ecliptic latitude of the Moon (degrees)
+        let beta_moon = 5.128 * Math.sin(F_rad) 
+          + 0.281 * Math.sin((M_prime_rad + F_rad)) 
+          - 0.277 * Math.sin((M_prime_rad - F_rad)) 
+          - 0.173 * Math.sin((2 * D - F_rad)) 
+          + 0.055 * Math.sin((2 * D - M_prime_rad - F_rad)) 
+          - 0.047 * Math.sin((2 * D + F_rad)) 
+          - 0.046 * Math.sin((2 * D - M_prime_rad + F_rad)) 
+          + 0.034 * Math.sin((2 * M_prime_rad - F_rad)) 
+          - 0.032 * Math.sin((M_rad + F_rad)) 
+          - 0.031 * Math.sin((M_rad - F_rad)) 
+          - 0.024 * Math.sin((2 * D + M_prime_rad - F_rad));
+
+        // Convert lambda and beta to radians
+        const lambda_rad = lambda_moon * Math.PI / 180;
+        const beta_rad = beta_moon * Math.PI / 180;
+
+        // Obliquity of the ecliptic (degrees)
+        const epsilon = 23.4393 - 0.0130 * T;
+        const epsilon_rad = epsilon * Math.PI / 180;
+
+        // Equatorial coordinates
+        const alpha_rad = Math.atan2(
+          Math.sin(lambda_rad) * Math.cos(epsilon_rad) - Math.tan(beta_rad) * Math.sin(epsilon_rad),
+          Math.cos(lambda_rad)
+        );
+        const delta_rad = Math.asin(
+          Math.sin(beta_rad) * Math.cos(epsilon_rad) + Math.cos(beta_rad) * Math.sin(epsilon_rad) * Math.sin(lambda_rad)
+        );
+
+        // Greenwich Sidereal Time (degrees)
+        const GST = 280.4606 + 360.9856473 * (jd - 2451545.0);
+        const GST_rad = GST * Math.PI / 180;
+
+        // Hour angle
+        const HA = GST_rad - alpha_rad - lng * Math.PI / 180;
+
+        // Altitude and azimuth
+        const lat_rad = lat * Math.PI / 180;
+        const altitude_rad = Math.asin(
+          Math.sin(lat_rad) * Math.sin(delta_rad) + Math.cos(lat_rad) * Math.cos(delta_rad) * Math.cos(HA)
+        );
+
+        // Phase angle (simplified)
+        const phase_angle = Math.atan2(
+          Math.cos(delta_rad) * Math.sin(HA),
+          Math.sin(delta_rad) * Math.cos(lat_rad) - Math.cos(delta_rad) * Math.sin(lat_rad) * Math.cos(HA)
+        );
+
+        // Illumination (0 = new moon, 1 = full moon)
+        const illumination = (1 + Math.cos(phase_angle)) / 2;
+        
+        // Phase names
+        const phaseNames = [
+          'New Moon', 'Waxing Crescent', 'First Quarter', 'Waxing Gibbous',
+          'Full Moon', 'Waning Gibbous', 'Last Quarter', 'Waning Crescent'
+        ];
+        
+        const phaseIndex = Math.round((illumination * 8) % 8);
+        const phaseName = phaseNames[phaseIndex % 8];
+
+        // Moon's age (days since new moon)
+        const newMoonJD = 2451550.09765 + 29.53058867 * Math.round((jd - 2451550.09765) / 29.53058867);
+        const age = jd - newMoonJD;
+        const ageDays = age % 29.53;
+
+        return {
+          illumination: illumination,
+          phaseName: phaseName,
+          phaseIndex: phaseIndex,
+          ageDays: ageDays,
+          altitude: altitude_rad * 180 / Math.PI,
+          azimuth: phase_angle * 180 / Math.PI
+        };
+      }
+
+      // ----- SVG Moon renderer -----
+      function renderMoonSVG(illumination, size) {
+        const w = size || 64;
+        const h = size || 64;
+        
+        // Clamp illumination
+        const illum = Math.max(0, Math.min(1, illumination));
+        
+        // Determine if waxing or waning based on illumination direction
+        // Using phase angle to determine if waxing (0-180°) or waning (180-360°)
+        // For visual simplicity, we'll use the illumination to create the crescent/gibbous shape
+        const isWaxing = illum < 0.5 ? true : false;
+        
+        // Moon circle
+        let svg = `<svg viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg">`;
+        
+        // Background circle (dark side)
+        svg += `<circle cx="${w/2}" cy="${h/2}" r="${w/2 - 2}" fill="#1a1a2e" stroke="#3d3d5c" stroke-width="1"/>`;
+        
+        if (illum > 0.01) {
+          // Light side
+          const r = w/2 - 2;
+          const cx = w/2;
+          const cy = h/2;
+          
+          // Illuminated portion
+          if (illum < 0.5) {
+            // Crescent
+            const xOffset = (1 - illum * 2) * r;
+            svg += `<path d="M ${cx - r} ${cy - r} A ${r} ${r} 0 0 1 ${cx + r} ${cy - r} A ${r} ${r} 0 0 1 ${cx - r} ${cy + r} A ${r} ${r} 0 0 0 ${cx + xOffset} ${cy} L ${cx - r} ${cy - r} Z" fill="#f0e8d0" opacity="0.9"/>`;
+          } else {
+            // Gibbous or full
+            const xOffset = (illum - 0.5) * 2 * r;
+            svg += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="#f0e8d0" opacity="0.9"/>`;
+            // Dark shadow for gibbous
+            if (illum < 0.99) {
+              const shadowX = (1 - illum) * 2 * r;
+              svg += `<path d="M ${cx - r} ${cy - r} A ${r} ${r} 0 0 1 ${cx + r} ${cy - r} A ${r} ${r} 0 0 1 ${cx - r} ${cy + r} A ${r} ${r} 0 0 0 ${cx + shadowX} ${cy} L ${cx - r} ${cy - r} Z" fill="#1a1a2e" opacity="0.3"/>`;
+            }
+          }
+        }
+        
+        // Subtle crater texture (optional)
+        svg += `<circle cx="${w*0.35}" cy="${h*0.3}" r="${w*0.06}" fill="#ddd5c0" opacity="0.2"/>`;
+        svg += `<circle cx="${w*0.65}" cy="${h*0.7}" r="${w*0.04}" fill="#ddd5c0" opacity="0.15"/>`;
+        svg += `<circle cx="${w*0.45}" cy="${h*0.65}" r="${w*0.03}" fill="#ddd5c0" opacity="0.1"/>`;
+        
+        svg += `</svg>`;
+        return svg;
+      }
+
+      // ----- Widget renderer -----
+      function renderWidget(el) {
+        const lat = parseFloat(el.getAttribute('data-lat'));
+        const lng = parseFloat(el.getAttribute('data-lng'));
+        const place = el.getAttribute('place') || '';
+        const size = el.getAttribute('data-size') || 'full';
+        
+        if (isNaN(lat) || isNaN(lng)) {
+          el.innerHTML = `<div class="ac-widget ac-widget--error">
+            <div>📍 Missing coordinates (data-lat, data-lng)</div>
+            <div class="ac-w-foot">Please provide valid latitude and longitude</div>
+          </div>`;
+          return;
+        }
+
+        try {
+          const phase = getMoonPhase(new Date(), lat, lng);
+          const illuminationPercent = Math.round(phase.illumination * 100);
+          
+          // Determine emoji representation
+          const phaseEmojis = ['🌑', '🌒', '🌓', '🌔', '🌕', '🌖', '🌗', '🌘'];
+          const emoji = phaseEmojis[phase.phaseIndex % 8];
+          
+          // Build HTML
+          const isCompact = size === 'compact';
+          const iconSize = isCompact ? 44 : 64;
+          
+          let html = `<div class="ac-widget">`;
+          html += `<div class="ac-w-content">`;
+          html += `<div class="ac-w-phase">`;
+          
+          // Moon icon
+          html += `<div class="moon-icon">`;
+          html += renderMoonSVG(phase.illumination, iconSize);
+          html += `</div>`;
+          
+          // Phase info
+          html += `<div class="phase-info">`;
+          html += `<div class="phase-label">${emoji} ${phase.phaseName}</div>`;
+          html += `<div class="phase-detail">`;
+          html += `<span class="illumination">${illuminationPercent}% illuminated</span>`;
+          html += ` · Age ${Math.round(phase.ageDays)}d`;
+          html += `</div>`;
+          html += `</div>`;
+          html += `</div>`;
+          
+          // Location (full mode only or always in compact)
+          if (place) {
+            html += `<div class="ac-w-location">`;
+            html += `<span class="loc-icon">📍</span>`;
+            html += `<span class="loc-name">${place}</span>`;
+            html += `</div>`;
+          }
+          
+          html += `</div>`;
+          html += `</div>`;
+          
+          el.innerHTML = html;
+          
+        } catch (error) {
+          el.innerHTML = `<div class="ac-widget ac-widget--error">
+            <div>🌙 Couldn't load moon phase</div>
+            <div class="ac-w-foot">${error.message}</div>
+          </div>`;
+        }
+      }
+
+      // ----- Initialize all widgets -----
+      function initWidgets() {
+        const nodes = document.querySelectorAll('.ac-widget-moon');
+        for (let i = 0; i < nodes.length; i++) {
+          const el = nodes[i];
+          if (el.getAttribute('data-ac-widget-mounted') === '1') continue;
+          el.setAttribute('data-ac-widget-mounted', '1');
+          renderWidget(el);
+        }
+      }
+
+      // ----- Auto-init -----
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initWidgets);
+      } else {
+        initWidgets();
+      }
+
+    })();
+  </script>
 
 </body>
 </html>
