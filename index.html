@@ -36,7 +36,7 @@
 
         .widget-header {
             text-align: center;
-            margin-bottom: 1.8rem;
+            margin-bottom: 1.5rem;
         }
         .widget-header h1 {
             color: #f0e8d0;
@@ -51,7 +51,7 @@
         }
 
         .timezone-selector {
-            margin-bottom: 1.8rem;
+            margin-bottom: 1.2rem;
         }
         .timezone-selector select {
             width: 100%;
@@ -78,6 +78,84 @@
         }
         .timezone-selector select option {
             background: #1a1a2e;
+            color: #f0e8d0;
+        }
+
+        /* --- Calendar Input --- */
+        .calendar-control {
+            display: flex;
+            gap: 0.6rem;
+            margin-bottom: 1.2rem;
+            align-items: center;
+        }
+        .calendar-control input[type="date"] {
+            flex: 1;
+            padding: 0.7rem 1rem;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            color: #f0e8d0;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .calendar-control input[type="date"]:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+        .calendar-control input[type="date"]:focus {
+            outline: none;
+            border-color: #f0e8d0;
+        }
+        .calendar-control input[type="date"]::-webkit-calendar-picker-indicator {
+            filter: invert(0.8);
+            cursor: pointer;
+        }
+        .calendar-control .today-btn {
+            padding: 0.7rem 1.2rem;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            color: #f0e8d0;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+        .calendar-control .today-btn:hover {
+            background: rgba(255, 255, 255, 0.12);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+        .calendar-control .today-btn:active {
+            transform: scale(0.96);
+        }
+
+        /* --- Quick date chips --- */
+        .quick-dates {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.2rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .quick-dates button {
+            padding: 0.4rem 0.9rem;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 20px;
+            color: #8a847e;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .quick-dates button:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.12);
+            color: #f0e8d0;
+        }
+        .quick-dates button.active {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.2);
             color: #f0e8d0;
         }
 
@@ -117,12 +195,6 @@
         .phase-detail .illumination {
             font-weight: 500;
             color: #e8dcc8;
-        }
-        .phase-detail .source {
-            font-size: 0.7rem;
-            opacity: 0.4;
-            display: block;
-            margin-top: 0.2rem;
         }
 
         .ac-w-location {
@@ -164,12 +236,23 @@
         }
         @keyframes spin { to { transform: rotate(360deg); } }
 
+        .selected-date-label {
+            color: #6a6460;
+            font-size: 0.8rem;
+            text-align: center;
+            margin-top: 0.5rem;
+        }
+
         @media (max-width: 480px) {
             .container { padding: 1.2rem; }
             .ac-widget { padding: 1.5rem 1rem; }
             .moon-emoji { font-size: 4rem; }
             .phase-label { font-size: 1.4rem; }
             .widget-header h1 { font-size: 1.4rem; }
+            .calendar-control { flex-wrap: wrap; }
+            .calendar-control input[type="date"] { flex: 1 1 100%; }
+            .calendar-control .today-btn { flex: 1; }
+            .quick-dates button { font-size: 0.7rem; padding: 0.3rem 0.7rem; }
         }
     </style>
 </head>
@@ -233,16 +316,35 @@
         </select>
     </div>
 
+    <!-- Calendar Controls -->
+    <div class="calendar-control">
+        <input type="date" id="datePicker" />
+        <button class="today-btn" id="todayBtn">📅 Today</button>
+    </div>
+
+    <!-- Quick date chips -->
+    <div class="quick-dates" id="quickDates">
+        <button data-offset="-3">3d ago</button>
+        <button data-offset="-2">2d ago</button>
+        <button data-offset="-1">Yesterday</button>
+        <button data-offset="0" class="active">Today</button>
+        <button data-offset="1">Tomorrow</button>
+        <button data-offset="2">2d ahead</button>
+        <button data-offset="3">3d ahead</button>
+    </div>
+
     <div class="ac-widget-moon"
-         data-lat="40.7128"
-         data-lng="-74.0060"
-         data-place="New York (EST)"
+         data-lat="51.5074"
+         data-lng="-0.1278"
+         data-place="London (GMT)"
          data-size="full">
         <div class="ac-widget ac-widget--loading">
             <div class="spinner"></div>
             <div style="margin-top: 0.8rem; color: #8a847e;">Loading moon data…</div>
         </div>
     </div>
+
+    <div class="selected-date-label" id="selectedDateLabel">Showing: Today</div>
 </div>
 
 <script>
@@ -253,43 +355,44 @@
         const widgetEl = document.querySelector('.ac-widget-moon');
         const selectEl = document.getElementById('timezoneSelect');
         const dateDisplay = document.getElementById('dateDisplay');
+        const datePicker = document.getElementById('datePicker');
+        const todayBtn = document.getElementById('todayBtn');
+        const quickDates = document.getElementById('quickDates');
+        const selectedDateLabel = document.getElementById('selectedDateLabel');
 
-        // --- SIMPLE, RELIABLE moon phase calculation ---
-        // Based on the well-known "moon phase" algorithm used by many open-source projects
+        // --- State ---
+        let currentDate = new Date();
+        let currentTz = 'Europe/London';
+        let currentPlace = 'London (GMT)';
+        let currentLat = 51.5074;
+        let currentLng = -0.1278;
+
+        // --- Moon phase calculation ---
         function getMoonPhase(date) {
-            // Convert date to Julian Day
             const year = date.getUTCFullYear();
             const month = date.getUTCMonth() + 1;
             const day = date.getUTCDate();
             const hours = date.getUTCHours() + date.getUTCMinutes() / 60 + date.getUTCSeconds() / 3600;
 
-            // Julian Day calculation (valid for 1900-2100)
             let a = Math.floor((14 - month) / 12);
             let y = year + 4800 - a;
             let m = month + 12 * a - 3;
             let jd = day + Math.floor((153 * m + 2) / 5) + 365 * y + Math.floor(y / 4) - Math.floor(y / 100) + Math.floor(y / 400) - 32045;
             jd = jd + hours / 24 - 0.5;
 
-            // Known new moon: 2000-01-06 18:14 UTC = JD 2451550.09765
             const knownNewMoonJD = 2451550.09765;
             const synodicPeriod = 29.53058867;
 
-            // Calculate days since known new moon
             let daysSinceNewMoon = jd - knownNewMoonJD;
-            // Modulo to get age within one synodic month
             let age = daysSinceNewMoon % synodicPeriod;
             if (age < 0) age += synodicPeriod;
 
-            // Calculate illumination
-            // age 0 = new moon, age 14.765 = full moon, age 29.53 = new moon
-            // Using cosine to create smooth illumination curve
             const phaseAngle = (age / synodicPeriod) * 2 * Math.PI;
             let illumination = (1 - Math.cos(phaseAngle)) / 2;
             illumination = Math.max(0, Math.min(1, illumination));
 
-            // Determine phase name
             let name, emoji;
-            const phase = age / synodicPeriod; // 0 to 1
+            const phase = age / synodicPeriod;
 
             if (phase < 0.03 || phase > 0.97) {
                 name = 'New Moon';
@@ -317,16 +420,11 @@
                 emoji = '🌘';
             }
 
-            return {
-                illumination: illumination,
-                name: name,
-                emoji: emoji,
-                age: age
-            };
+            return { illumination, name, emoji, age };
         }
 
         // --- Render widget ---
-        function renderWidget(phaseData, place) {
+        function renderWidget(phaseData, place, dateStr) {
             const percent = Math.round(phaseData.illumination * 100);
 
             let html = `<div class="ac-widget">`;
@@ -346,14 +444,10 @@
 
             html += `</div>`;
             widgetEl.innerHTML = html;
-        }
 
-        // --- Show error ---
-        function showError(message) {
-            widgetEl.innerHTML = `<div class="ac-widget ac-widget--error">
-                <div>🌙 Couldn't load moon data</div>
-                <div class="ac-w-foot">${message}</div>
-            </div>`;
+            if (dateStr) {
+                selectedDateLabel.textContent = `Showing: ${dateStr}`;
+            }
         }
 
         // --- Show loading ---
@@ -381,49 +475,203 @@
             }
         }
 
-        // --- Main update ---
-        function updateWidget() {
-            const value = selectEl.value;
-            const parts = value.split(',');
-
-            if (parts.length < 4) {
-                showError('Invalid timezone selection.');
-                return;
+        // --- Format date for display ---
+        function formatDateDisplay(date, tz) {
+            try {
+                return date.toLocaleDateString('en-US', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    timeZone: tz || 'UTC'
+                });
+            } catch (_) {
+                return date.toLocaleDateString('en-US', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
             }
+        }
 
-            const lat = parseFloat(parts[0]);
-            const lng = parseFloat(parts[1]);
-            const tz = parts[2];
-            const place = parts.slice(3).join(',');
-
-            if (isNaN(lat) || isNaN(lng)) {
-                showError('Missing or invalid coordinates.');
-                return;
+        // --- Get date in timezone ---
+        function getDateInTimezone(date, tz) {
+            try {
+                const parts = date.toLocaleString('en-US', { timeZone: tz }).split(/[\/,: ]/);
+                // Simple approach: use the string to create a new date
+                const tzDate = new Date(date.toLocaleString('en-US', { timeZone: tz }));
+                return tzDate;
+            } catch (_) {
+                return new Date(date);
             }
+        }
 
-            updateDateDisplay(tz);
-            showLoading();
+        // --- Update widget with current settings ---
+        function updateWidget(selectedDate) {
+            const dateToUse = selectedDate || currentDate;
 
-            // Get date in timezone
+            // Get date in the selected timezone
             let dateInTz;
             try {
-                dateInTz = new Date(new Date().toLocaleString('en-US', { timeZone: tz }));
+                dateInTz = new Date(dateToUse.toLocaleString('en-US', { timeZone: currentTz }));
             } catch (_) {
-                dateInTz = new Date();
+                dateInTz = new Date(dateToUse);
             }
 
             // Calculate phase
             const phase = getMoonPhase(dateInTz);
-            renderWidget(phase, place);
+
+            // Format date for display
+            const dateStr = formatDateDisplay(dateInTz, currentTz);
+
+            renderWidget(phase, currentPlace, dateStr);
+            updateDateDisplay(currentTz);
+
+            // Update date picker
+            const year = dateToUse.getFullYear();
+            const month = String(dateToUse.getMonth() + 1).padStart(2, '0');
+            const day = String(dateToUse.getDate()).padStart(2, '0');
+            datePicker.value = `${year}-${month}-${day}`;
+        }
+
+        // --- Main update ---
+        function initWidget() {
+            const value = selectEl.value;
+            const parts = value.split(',');
+
+            if (parts.length >= 4) {
+                currentLat = parseFloat(parts[0]);
+                currentLng = parseFloat(parts[1]);
+                currentTz = parts[2];
+                currentPlace = parts.slice(3).join(',');
+            }
+
+            // Set date picker max to today
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const day = String(today.getDate()).padStart(2, '0');
+            datePicker.max = `${year}-${month}-${day}`;
+
+            updateWidget(currentDate);
+        }
+
+        // --- Event handlers ---
+
+        // Timezone change
+        selectEl.addEventListener('change', function() {
+            const value = this.value;
+            const parts = value.split(',');
+            if (parts.length >= 4) {
+                currentLat = parseFloat(parts[0]);
+                currentLng = parseFloat(parts[1]);
+                currentTz = parts[2];
+                currentPlace = parts.slice(3).join(',');
+                updateWidget(currentDate);
+            }
+        });
+
+        // Date picker change
+        datePicker.addEventListener('change', function() {
+            if (this.value) {
+                const parts = this.value.split('-');
+                const newDate = new Date(
+                    parseInt(parts[0]),
+                    parseInt(parts[1]) - 1,
+                    parseInt(parts[2]),
+                    12, 0, 0 // Noon to avoid timezone issues
+                );
+                currentDate = newDate;
+                updateWidget(currentDate);
+                updateQuickDates(currentDate);
+            }
+        });
+
+        // Today button
+        todayBtn.addEventListener('click', function() {
+            const now = new Date();
+            // Get today in the current timezone
+            try {
+                const tzNow = new Date(now.toLocaleString('en-US', { timeZone: currentTz }));
+                currentDate = new Date(tzNow.getFullYear(), tzNow.getMonth(), tzNow.getDate(), 12, 0, 0);
+            } catch (_) {
+                currentDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 12, 0, 0);
+            }
+            updateWidget(currentDate);
+            updateQuickDates(currentDate);
+        });
+
+        // Quick date chips
+        quickDates.addEventListener('click', function(e) {
+            const btn = e.target.closest('button');
+            if (!btn) return;
+
+            const offset = parseInt(btn.dataset.offset);
+            if (isNaN(offset)) return;
+
+            // Get today in current timezone
+            let today;
+            try {
+                const now = new Date();
+                const tzNow = new Date(now.toLocaleString('en-US', { timeZone: currentTz }));
+                today = new Date(tzNow.getFullYear(), tzNow.getMonth(), tzNow.getDate(), 12, 0, 0);
+            } catch (_) {
+                const now = new Date();
+                today = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 12, 0, 0);
+            }
+
+            const newDate = new Date(today);
+            newDate.setDate(today.getDate() + offset);
+            currentDate = newDate;
+            updateWidget(currentDate);
+            updateQuickDates(currentDate);
+        });
+
+        // --- Update quick dates highlighting ---
+        function updateQuickDates(selectedDate) {
+            const buttons = quickDates.querySelectorAll('button');
+            let today;
+            try {
+                const now = new Date();
+                const tzNow = new Date(now.toLocaleString('en-US', { timeZone: currentTz }));
+                today = new Date(tzNow.getFullYear(), tzNow.getMonth(), tzNow.getDate(), 12, 0, 0);
+            } catch (_) {
+                const now = new Date();
+                today = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 12, 0, 0);
+            }
+
+            buttons.forEach(btn => {
+                const offset = parseInt(btn.dataset.offset);
+                const compareDate = new Date(today);
+                compareDate.setDate(today.getDate() + offset);
+
+                const isMatch = selectedDate.getFullYear() === compareDate.getFullYear() &&
+                               selectedDate.getMonth() === compareDate.getMonth() &&
+                               selectedDate.getDate() === compareDate.getDate();
+
+                btn.classList.toggle('active', isMatch);
+            });
         }
 
         // --- Init ---
         document.addEventListener('DOMContentLoaded', function() {
-            const defaultOption = selectEl.querySelector('option[value="40.7128,-74.0060,America/New_York,New York (EST)"]');
+            // Set default to London (GMT)
+            const defaultOption = selectEl.querySelector('option[value="51.5074,-0.1278,Europe/London,London (GMT)"]');
             if (defaultOption) selectEl.value = defaultOption.value;
-            updateWidget();
-            selectEl.addEventListener('change', updateWidget);
-            setInterval(updateWidget, 60000);
+
+            // Get today in London timezone for initial state
+            try {
+                const now = new Date();
+                const tzNow = new Date(now.toLocaleString('en-US', { timeZone: 'Europe/London' }));
+                currentDate = new Date(tzNow.getFullYear(), tzNow.getMonth(), tzNow.getDate(), 12, 0, 0);
+            } catch (_) {
+                const now = new Date();
+                currentDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 12, 0, 0);
+            }
+
+            initWidget();
+            updateQuickDates(currentDate);
         });
 
     })();
