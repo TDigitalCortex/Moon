@@ -1,0 +1,80 @@
+/* widget.css – local fallback (matches Astro-Charts styling) */
+/* This is a simplified version – the CDN version is more complete */
+.ac-widget-moon {
+  display: block;
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
+
+.ac-widget {
+  background: #ffffff;
+  border-radius: 20px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+  padding: 1.2rem 1rem 1rem;
+  transition: all 0.2s;
+  max-width: 400px;
+  min-width: 220px;
+}
+
+.ac-widget--error {
+  background: #fcf8f5;
+  border: 1px solid #f0e3d8;
+  color: #7a5e4a;
+  padding: 1.2rem;
+  border-radius: 20px;
+  text-align: center;
+  font-size: 0.9rem;
+}
+
+.ac-w-foot {
+  font-size: 0.75rem;
+  opacity: 0.7;
+  margin-top: 0.5rem;
+}
+
+/* compact size adjustments */
+[data-size="compact"] .ac-widget {
+  padding: 0.8rem 1rem;
+  max-width: 280px;
+  border-radius: 40px;
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+[data-size="compact"] .ac-widget .ac-w-content {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  width: 100%;
+}
+
+/* moon phase illustration – these are just stubs; the real CSS comes from CDN */
+.ac-w-phase {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+.ac-w-phase .moon-icon {
+  font-size: 2.2rem;
+  line-height: 1;
+}
+.ac-w-phase .phase-label {
+  font-weight: 500;
+  font-size: 0.95rem;
+}
+.ac-w-phase .phase-detail {
+  font-size: 0.8rem;
+  opacity: 0.7;
+}
+
+/* Responsive tweaks */
+@media (max-width: 480px) {
+  .ac-widget {
+    padding: 0.8rem;
+    border-radius: 16px;
+  }
+  [data-size="compact"] .ac-widget {
+    border-radius: 30px;
+    padding: 0.6rem 1rem;
+  }
+}
