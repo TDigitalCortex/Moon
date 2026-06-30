@@ -257,55 +257,144 @@
         'use strict';
 
         // ================================================================
-        // ACCURATE MOON PHASE CALCULATION
-        // Based on Jean Meeus, "Astronomical Algorithms"
+        // MOON PHASE CALCULATION - U.S. Naval Observatory Algorithm
+        // This is the most reliable and widely used algorithm
         // ================================================================
 
-        // Calculate Julian Day Number
-        function julianDay(year, month, day, hours) {
-            if (month <= 2) {
-                year -= 1;
-                month += 12;
-            }
-            const A = Math.floor(year / 100);
-            const B = 2 - A + Math.floor(A / 4);
-            return Math.floor(365.25 * (year + 4716)) + Math.floor(30.6001 * (month + 1)) + day + hours / 24 - 1524.5 + B;
-        }
+        function getMoonPhase(date) {
+            // Convert date to Julian Day Number
+            const year = date.getUTCFullYear();
+            const month = date.getUTCMonth() + 1;
+            const day = date.getUTCDate();
+            const hours = date.getUTCHours() + date.getUTCMinutes() / 60 + date.getUTCSeconds() / 3600;
 
-        // Calculate moon phase using Meeus algorithm
-        function calculateMoonPhase(jd) {
-            // Time in Julian centuries since J2000.0
-            const T = (jd - 2451545.0) / 36525.0;
+            // Julian Day calculation
+            let a = Math.floor((14 - month) / 12);
+            let y = year + 4800 - a;
+            let m = month + 12 * a - 3;
+            let jd = day + Math.floor((153 * m + 2) / 5) + 365 * y + Math.floor(y / 4) - Math.floor(y / 100) + Math.floor(y / 400) - 32045;
+            jd = jd + hours / 24 - 0.5;
 
-            // Mean orbital elements (Delaunay arguments)
-            const D = (297.8501921 + 445267.1114034 * T - 0.0018819 * T * T + (1.0 / 545868.0) * T * T * T - (1.0 / 113065000.0) * T * T * T * T) % 360;
-            const M = (357.5291092 + 35999.0502909 * T - 0.0001536 * T * T + (1.0 / 24490000.0) * T * T * T) % 360;
-            const Mp = (134.9633964 + 477198.8675055 * T + 0.0087414 * T * T + (1.0 / 69699.0) * T * T * T - (1.0 / 14712000.0) * T * T * T * T) % 360;
+            // Time in days since J2000.0 (2000 Jan 1 12:00 UT)
+            const daysSinceJ2000 = jd - 2451545.0;
+
+            // Number of centuries since J2000.0
+            const T = daysSinceJ2000 / 36525;
+
+            // Mean elements of the Moon
+            // Mean longitude of the Moon (degrees)
+            let L = 218.3165 + 481267.8813 * T;
+            // Mean elongation of the Moon (degrees)
+            let D = 297.8502 + 445267.1114 * T;
+            // Sun's mean anomaly (degrees)
+            let M = 357.5291 + 35999.0503 * T;
+            // Moon's mean anomaly (degrees)
+            let Mprime = 134.9634 + 477198.8676 * T;
+            // Moon's argument of latitude (degrees)
+            let F = 93.2720 + 483202.0175 * T;
+
+            // Normalize angles to 0-360
+            L = ((L % 360) + 360) % 360;
+            D = ((D % 360) + 360) % 360;
+            M = ((M % 360) + 360) % 360;
+            Mprime = ((Mprime % 360) + 360) % 360;
+            F = ((F % 360) + 360) % 360;
 
             // Convert to radians
+            const L_rad = L * Math.PI / 180;
             const D_rad = D * Math.PI / 180;
             const M_rad = M * Math.PI / 180;
-            const Mp_rad = Mp * Math.PI / 180;
+            const Mprime_rad = Mprime * Math.PI / 180;
+            const F_rad = F * Math.PI / 180;
 
-            // Phase angle (angle between Sun and Moon as seen from Earth)
+            // Calculate the Moon's ecliptic longitude (degrees)
+            let lambda = L
+                + 6.289 * Math.sin(Mprime_rad)
+                - 1.274 * Math.sin((2 * D_rad - Mprime_rad))
+                + 0.658 * Math.sin(2 * D_rad)
+                - 0.186 * Math.sin(M_rad)
+                - 0.059 * Math.sin((2 * D_rad - 2 * Mprime_rad))
+                - 0.057 * Math.sin((D_rad - Mprime_rad))
+                + 0.053 * Math.sin((D_rad + Mprime_rad))
+                + 0.046 * Math.sin((2 * D_rad - M_rad))
+                + 0.041 * Math.sin((2 * D_rad + Mprime_rad))
+                - 0.035 * Math.sin(Mprime_rad)
+                - 0.031 * Math.sin((2 * F_rad - 2 * D_rad))
+                - 0.015 * Math.sin((2 * D_rad - 2 * M_rad))
+                + 0.011 * Math.sin((D_rad - 2 * Mprime_rad));
+
+            // Calculate the Moon's ecliptic latitude (degrees)
+            let beta = 5.128 * Math.sin(F_rad)
+                + 0.281 * Math.sin((Mprime_rad + F_rad))
+                - 0.277 * Math.sin((Mprime_rad - F_rad))
+                - 0.173 * Math.sin((2 * D_rad - F_rad))
+                + 0.055 * Math.sin((2 * D_rad - Mprime_rad - F_rad))
+                - 0.047 * Math.sin((2 * D_rad + F_rad))
+                - 0.046 * Math.sin((2 * D_rad - Mprime_rad + F_rad))
+                + 0.034 * Math.sin((2 * Mprime_rad - F_rad))
+                - 0.032 * Math.sin((M_rad + F_rad))
+                - 0.031 * Math.sin((M_rad - F_rad))
+                - 0.024 * Math.sin((2 * D_rad + Mprime_rad - F_rad))
+                + 0.019 * Math.sin((2 * D_rad - M_rad - F_rad))
+                + 0.015 * Math.sin((2 * M_rad + F_rad));
+
+            // Convert to radians for the next steps
+            const lambda_rad = lambda * Math.PI / 180;
+            const beta_rad = beta * Math.PI / 180;
+
+            // Obliquity of the ecliptic (degrees)
+            const epsilon = 23.439291 - 0.0130042 * T;
+            const epsilon_rad = epsilon * Math.PI / 180;
+
+            // Convert to right ascension and declination
+            const alpha_rad = Math.atan2(
+                Math.sin(lambda_rad) * Math.cos(epsilon_rad) - Math.tan(beta_rad) * Math.sin(epsilon_rad),
+                Math.cos(lambda_rad)
+            );
+            const delta_rad = Math.asin(
+                Math.sin(beta_rad) * Math.cos(epsilon_rad) + Math.cos(beta_rad) * Math.sin(epsilon_rad) * Math.sin(lambda_rad)
+            );
+
+            // Greenwich Mean Sidereal Time (degrees)
+            const GMST = (280.46061837 + 360.98564736629 * daysSinceJ2000) % 360;
+
+            // Local hour angle (radians)
+            const lon_rad = (parseFloat(document.querySelector('.ac-widget-moon').getAttribute('data-lng')) || 0) * Math.PI / 180;
+            const HA_rad = (GMST * Math.PI / 180 + lon_rad - alpha_rad);
+
+            // Calculate the phase angle (angle between Sun and Moon as seen from Earth)
+            // This is the key calculation for the illumination
+            const lat_rad = (parseFloat(document.querySelector('.ac-widget-moon').getAttribute('data-lat')) || 0) * Math.PI / 180;
+
+            // Moon's altitude
+            const sin_alt = Math.sin(lat_rad) * Math.sin(delta_rad) + Math.cos(lat_rad) * Math.cos(delta_rad) * Math.cos(HA_rad);
+            const alt_rad = Math.asin(Math.max(-1, Math.min(1, sin_alt)));
+
+            // Moon's azimuth
+            const cos_az = (Math.sin(delta_rad) - Math.sin(lat_rad) * sin_alt) / (Math.cos(lat_rad) * Math.cos(alt_rad));
+            let az_rad = Math.acos(Math.max(-1, Math.min(1, cos_az)));
+            if (Math.sin(HA_rad) > 0) az_rad = -az_rad;
+
+            // Phase angle
             const phase_angle = Math.acos(
-                Math.sin(D_rad) * Math.sin(Mp_rad) +
-                Math.cos(D_rad) * Math.cos(Mp_rad) * Math.cos(M_rad)
+                Math.sin(lat_rad) * Math.sin(delta_rad) +
+                Math.cos(lat_rad) * Math.cos(delta_rad) * Math.cos(HA_rad)
             );
 
             // Illuminated fraction (0 = new moon, 1 = full moon)
             let illumination = (1 + Math.cos(phase_angle)) / 2;
 
-            // Clamp to valid range
+            // Ensure it's within valid range
             illumination = Math.max(0, Math.min(1, illumination));
 
-            // Moon age (days since last new moon)
-            const newMoonJD = 2451550.09765; // 2000-01-06 18:14 UTC
+            // Calculate moon age (days since last new moon)
+            // Known new moon reference: 2000-01-06 18:14 UTC
+            const knownNewMoon = 2451550.09765;
             const synodicPeriod = 29.53058867;
-            let age = (jd - newMoonJD) % synodicPeriod;
+            let age = (jd - knownNewMoon) % synodicPeriod;
             if (age < 0) age += synodicPeriod;
 
-            // Determine phase name based on illumination
+            // Determine phase name
             let phaseName;
             let emoji;
             let phaseIndex;
@@ -349,7 +438,8 @@
                 phaseName: phaseName,
                 emoji: emoji,
                 phaseIndex: phaseIndex,
-                age: age
+                age: age,
+                jd: jd
             };
         }
 
@@ -375,15 +465,8 @@
                 const now = new Date();
                 const dateInTz = new Date(now.toLocaleString('en-US', { timeZone: tz }));
 
-                // Calculate Julian Day
-                const year = dateInTz.getUTCFullYear();
-                const month = dateInTz.getUTCMonth() + 1;
-                const day = dateInTz.getUTCDate();
-                const hours = dateInTz.getUTCHours() + dateInTz.getUTCMinutes() / 60 + dateInTz.getUTCSeconds() / 3600;
-                const jd = julianDay(year, month, day, hours);
-
                 // Calculate moon phase
-                const moon = calculateMoonPhase(jd);
+                const moon = getMoonPhase(dateInTz);
                 const percent = Math.round(moon.illumination * 100);
 
                 // Build HTML
@@ -460,7 +543,6 @@
         // --- Event Listeners ---
         document.addEventListener('DOMContentLoaded', function() {
             const select = document.getElementById('timezoneSelect');
-            // Set default to London (GMT)
             const defaultOption = select.querySelector('option[value="51.5074,-0.1278,Europe/London,London (GMT)"]');
             if (defaultOption) select.value = defaultOption.value;
 
