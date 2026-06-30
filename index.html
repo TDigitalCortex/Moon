@@ -23,7 +23,7 @@
         }
 
         .container {
-            max-width: 520px;
+            max-width: 700px;
             width: 100%;
             background: rgba(255, 255, 255, 0.05);
             backdrop-filter: blur(20px);
@@ -78,6 +78,34 @@
         }
         .timezone-selector select option {
             background: #1a1a2e;
+            color: #f0e8d0;
+        }
+
+        /* --- View Toggle --- */
+        .view-toggle {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            justify-content: center;
+        }
+        .view-toggle button {
+            padding: 0.5rem 1.2rem;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 20px;
+            color: #8a847e;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .view-toggle button:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.12);
+            color: #f0e8d0;
+        }
+        .view-toggle button.active {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.2);
             color: #f0e8d0;
         }
 
@@ -173,6 +201,7 @@
             color: #f0e8d0;
         }
 
+        /* --- Single Day View --- */
         .ac-widget-moon {
             display: block;
             width: 100%;
@@ -268,6 +297,122 @@
             border: 1px solid rgba(100, 200, 255, 0.1);
         }
 
+        /* --- Month View --- */
+        .month-view {
+            display: none;
+            background: rgba(255, 255, 255, 0.04);
+            border-radius: 20px;
+            padding: 1rem;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            overflow-x: auto;
+        }
+        .month-view.active {
+            display: block;
+        }
+
+        .month-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding: 0 0.5rem;
+        }
+        .month-header h3 {
+            color: #f0e8d0;
+            font-weight: 400;
+            font-size: 1.2rem;
+        }
+        .month-nav {
+            display: flex;
+            gap: 0.5rem;
+        }
+        .month-nav button {
+            padding: 0.3rem 0.8rem;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 10px;
+            color: #f0e8d0;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .month-nav button:hover {
+            background: rgba(255, 255, 255, 0.12);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .month-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px;
+        }
+
+        .month-day-header {
+            color: #6a6460;
+            font-size: 0.7rem;
+            text-align: center;
+            padding: 0.3rem 0;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+        }
+
+        .month-day {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 10px;
+            padding: 0.4rem 0.2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+            min-height: 60px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .month-day:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+        .month-day.today {
+            border-color: rgba(240, 232, 208, 0.3);
+            background: rgba(240, 232, 208, 0.06);
+        }
+        .month-day.selected {
+            border-color: #f0e8d0;
+            background: rgba(240, 232, 208, 0.08);
+        }
+        .month-day.other-month {
+            opacity: 0.3;
+        }
+        .month-day .day-number {
+            color: #f0e8d0;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        .month-day .day-emoji {
+            font-size: 1.4rem;
+            line-height: 1.2;
+        }
+        .month-day .day-illum {
+            color: #6a6460;
+            font-size: 0.55rem;
+            margin-top: 0.1rem;
+        }
+        .month-day .day-age {
+            color: #4a4440;
+            font-size: 0.5rem;
+        }
+        .month-day.future {
+            opacity: 0.85;
+        }
+        .month-day.future .day-number::after {
+            content: "🔮";
+            font-size: 0.45rem;
+            margin-left: 0.1rem;
+            opacity: 0.6;
+        }
+
         @media (max-width: 480px) {
             .container { padding: 1.2rem; }
             .ac-widget { padding: 1.5rem 1rem; }
@@ -278,6 +423,18 @@
             .nav-controls button { padding: 0.5rem 0.7rem; min-width: 36px; font-size: 0.9rem; }
             .nav-controls .today-btn { padding: 0.5rem 0.8rem; font-size: 0.75rem; }
             .quick-dates button { font-size: 0.65rem; padding: 0.25rem 0.6rem; }
+            .month-day { min-height: 50px; padding: 0.3rem 0.1rem; }
+            .month-day .day-emoji { font-size: 1.2rem; }
+            .month-day .day-number { font-size: 0.7rem; }
+            .month-day .day-illum { font-size: 0.5rem; }
+            .month-grid { gap: 2px; }
+        }
+
+        @media (max-width: 380px) {
+            .month-day .day-emoji { font-size: 1rem; }
+            .month-day .day-number { font-size: 0.6rem; }
+            .month-day .day-illum { font-size: 0.45rem; }
+            .month-day { min-height: 42px; }
         }
     </style>
 </head>
@@ -341,6 +498,12 @@
         </select>
     </div>
 
+    <!-- View Toggle -->
+    <div class="view-toggle">
+        <button class="active" data-view="day">📅 Day View</button>
+        <button data-view="month">📆 Month View</button>
+    </div>
+
     <!-- Calendar Controls -->
     <div class="calendar-control">
         <input type="date" id="datePicker" />
@@ -364,18 +527,34 @@
         <button data-offset="30">+30d</button>
     </div>
 
-    <div class="ac-widget-moon"
-         data-lat="51.5074"
-         data-lng="-0.1278"
-         data-place="London (GMT)"
-         data-size="full">
-        <div class="ac-widget ac-widget--loading">
-            <div class="spinner"></div>
-            <div style="margin-top: 0.8rem; color: #8a847e;">Loading moon data…</div>
+    <!-- Day View -->
+    <div id="dayView">
+        <div class="ac-widget-moon"
+             data-lat="51.5074"
+             data-lng="-0.1278"
+             data-place="London (GMT)"
+             data-size="full">
+            <div class="ac-widget ac-widget--loading">
+                <div class="spinner"></div>
+                <div style="margin-top: 0.8rem; color: #8a847e;">Loading moon data…</div>
+            </div>
         </div>
+        <div class="selected-date-label" id="selectedDateLabel">Showing: Today</div>
     </div>
 
-    <div class="selected-date-label" id="selectedDateLabel">Showing: Today</div>
+    <!-- Month View -->
+    <div class="month-view" id="monthView">
+        <div class="month-header">
+            <h3 id="monthTitle">June 2026</h3>
+            <div class="month-nav">
+                <button id="prevMonthBtn">◀</button>
+                <button id="nextMonthBtn">▶</button>
+            </div>
+        </div>
+        <div class="month-grid" id="monthGrid">
+            <!-- Generated by JavaScript -->
+        </div>
+    </div>
 </div>
 
 <script>
@@ -393,12 +572,21 @@
         const quickDates = document.getElementById('quickDates');
         const selectedDateLabel = document.getElementById('selectedDateLabel');
 
+        const dayView = document.getElementById('dayView');
+        const monthView = document.getElementById('monthView');
+        const monthTitle = document.getElementById('monthTitle');
+        const monthGrid = document.getElementById('monthGrid');
+        const prevMonthBtn = document.getElementById('prevMonthBtn');
+        const nextMonthBtn = document.getElementById('nextMonthBtn');
+        const viewToggleBtns = document.querySelectorAll('.view-toggle button');
+
         // --- State ---
         let currentDate = new Date();
         let currentTz = 'Europe/London';
         let currentPlace = 'London (GMT)';
         let currentLat = 51.5074;
         let currentLng = -0.1278;
+        let currentView = 'day'; // 'day' or 'month'
 
         // --- Moon phase calculation ---
         function getMoonPhase(date) {
@@ -456,8 +644,8 @@
             return { illumination, name, emoji, age };
         }
 
-        // --- Render widget ---
-        function renderWidget(phaseData, place, dateStr, isFuture) {
+        // --- Render day view ---
+        function renderDayView(phaseData, place, dateStr, isFuture) {
             const percent = Math.round(phaseData.illumination * 100);
 
             let html = `<div class="ac-widget">`;
@@ -522,7 +710,6 @@
                     day: 'numeric',
                     timeZone: tz || 'UTC'
                 });
-                // Check if it's a future date
                 const today = new Date();
                 const todayTz = new Date(today.toLocaleString('en-US', { timeZone: tz || 'UTC' }));
                 const isFuture = date > todayTz;
@@ -542,7 +729,6 @@
             try {
                 const today = new Date();
                 const todayTz = new Date(today.toLocaleString('en-US', { timeZone: tz || 'UTC' }));
-                // Compare dates (ignore time)
                 const todayDate = new Date(todayTz.getFullYear(), todayTz.getMonth(), todayTz.getDate());
                 const compareDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
                 return compareDate > todayDate;
@@ -567,7 +753,6 @@
         function updateWidget(selectedDate) {
             const dateToUse = selectedDate || currentDate;
 
-            // Get date in the selected timezone
             let dateInTz;
             try {
                 dateInTz = new Date(dateToUse.toLocaleString('en-US', { timeZone: currentTz }));
@@ -575,39 +760,128 @@
                 dateInTz = new Date(dateToUse);
             }
 
-            // Calculate phase
             const phase = getMoonPhase(dateInTz);
-
-            // Format date for display
             const dateStr = formatDateDisplay(dateInTz, currentTz);
             const isFuture = isFutureDate(dateInTz, currentTz);
 
-            renderWidget(phase, currentPlace, dateStr, isFuture);
+            renderDayView(phase, currentPlace, dateStr, isFuture);
             updateDateDisplay(currentTz);
 
-            // Update date picker
             const year = dateToUse.getFullYear();
             const month = String(dateToUse.getMonth() + 1).padStart(2, '0');
             const day = String(dateToUse.getDate()).padStart(2, '0');
             datePicker.value = `${year}-${month}-${day}`;
 
-            // Update quick dates
             updateQuickDates(dateInTz);
+            renderMonthView(dateInTz);
         }
 
-        // --- Main init ---
-        function initWidget() {
-            const value = selectEl.value;
-            const parts = value.split(',');
+        // --- Render month view ---
+        function renderMonthView(date) {
+            const year = date.getFullYear();
+            const month = date.getMonth();
 
-            if (parts.length >= 4) {
-                currentLat = parseFloat(parts[0]);
-                currentLng = parseFloat(parts[1]);
-                currentTz = parts[2];
-                currentPlace = parts.slice(3).join(',');
+            monthTitle.textContent = new Date(year, month, 1).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long'
+            });
+
+            const firstDay = new Date(year, month, 1);
+            const lastDay = new Date(year, month + 1, 0);
+            const daysInMonth = lastDay.getDate();
+            const startDayOfWeek = firstDay.getDay(); // 0 = Sunday
+
+            let html = '';
+
+            // Day headers
+            const dayHeaders = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+            dayHeaders.forEach(d => {
+                html += `<div class="month-day-header">${d}</div>`;
+            });
+
+            // Get today in current timezone
+            let today;
+            try {
+                const now = new Date();
+                const tzNow = new Date(now.toLocaleString('en-US', { timeZone: currentTz }));
+                today = new Date(tzNow.getFullYear(), tzNow.getMonth(), tzNow.getDate(), 12, 0, 0);
+            } catch (_) {
+                const now = new Date();
+                today = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 12, 0, 0);
             }
 
-            updateWidget(currentDate);
+            // Get selected date
+            const selectedDate = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 12, 0, 0);
+
+            // Previous month days
+            const prevMonthLastDay = new Date(year, month, 0).getDate();
+            for (let i = startDayOfWeek - 1; i >= 0; i--) {
+                const dayNum = prevMonthLastDay - i;
+                const d = new Date(year, month - 1, dayNum, 12, 0, 0);
+                const phase = getMoonPhase(d);
+                const percent = Math.round(phase.illumination * 100);
+                html += `<div class="month-day other-month" data-date="${d.toISOString()}">
+                    <div class="day-number">${dayNum}</div>
+                    <div class="day-emoji">${phase.emoji}</div>
+                    <div class="day-illum">${percent}%</div>
+                </div>`;
+            }
+
+            // Current month days
+            for (let dayNum = 1; dayNum <= daysInMonth; dayNum++) {
+                const d = new Date(year, month, dayNum, 12, 0, 0);
+                const phase = getMoonPhase(d);
+                const percent = Math.round(phase.illumination * 100);
+                const isToday = d.getFullYear() === today.getFullYear() &&
+                              d.getMonth() === today.getMonth() &&
+                              d.getDate() === today.getDate();
+                const isSelected = d.getFullYear() === selectedDate.getFullYear() &&
+                                  d.getMonth() === selectedDate.getMonth() &&
+                                  d.getDate() === selectedDate.getDate();
+                const isFuture = d > today;
+
+                let classes = 'month-day';
+                if (isToday) classes += ' today';
+                if (isSelected) classes += ' selected';
+                if (isFuture) classes += ' future';
+
+                html += `<div class="${classes}" data-date="${d.toISOString()}" data-day="${dayNum}">
+                    <div class="day-number">${dayNum}</div>
+                    <div class="day-emoji">${phase.emoji}</div>
+                    <div class="day-illum">${percent}%</div>
+                    <div class="day-age">${Math.round(phase.age)}d</div>
+                </div>`;
+            }
+
+            // Next month days to fill the grid
+            const totalDays = startDayOfWeek + daysInMonth;
+            const remainingDays = (7 - (totalDays % 7)) % 7;
+            for (let dayNum = 1; dayNum <= remainingDays; dayNum++) {
+                const d = new Date(year, month + 1, dayNum, 12, 0, 0);
+                const phase = getMoonPhase(d);
+                const percent = Math.round(phase.illumination * 100);
+                html += `<div class="month-day other-month" data-date="${d.toISOString()}">
+                    <div class="day-number">${dayNum}</div>
+                    <div class="day-emoji">${phase.emoji}</div>
+                    <div class="day-illum">${percent}%</div>
+                </div>`;
+            }
+
+            monthGrid.innerHTML = html;
+
+            // Add click listeners to month days
+            monthGrid.querySelectorAll('.month-day').forEach(el => {
+                el.addEventListener('click', function() {
+                    const dateStr = this.dataset.date;
+                    if (dateStr) {
+                        const d = new Date(dateStr);
+                        currentDate = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 12, 0, 0);
+                        updateWidget(currentDate);
+                        // Switch to day view
+                        setView('day');
+                    }
+                });
+            });
         }
 
         // --- Update quick dates highlighting ---
@@ -634,6 +908,41 @@
 
                 btn.classList.toggle('active', isMatch);
             });
+        }
+
+        // --- Set view ---
+        function setView(view) {
+            currentView = view;
+            if (view === 'day') {
+                dayView.style.display = 'block';
+                monthView.classList.remove('active');
+                viewToggleBtns.forEach(btn => {
+                    btn.classList.toggle('active', btn.dataset.view === 'day');
+                });
+            } else {
+                dayView.style.display = 'none';
+                monthView.classList.add('active');
+                viewToggleBtns.forEach(btn => {
+                    btn.classList.toggle('active', btn.dataset.view === 'month');
+                });
+                renderMonthView(currentDate);
+            }
+        }
+
+        // --- Main init ---
+        function initWidget() {
+            const value = selectEl.value;
+            const parts = value.split(',');
+
+            if (parts.length >= 4) {
+                currentLat = parseFloat(parts[0]);
+                currentLng = parseFloat(parts[1]);
+                currentTz = parts[2];
+                currentPlace = parts.slice(3).join(',');
+            }
+
+            updateWidget(currentDate);
+            setView('day');
         }
 
         // --- Event handlers ---
@@ -718,19 +1027,47 @@
             updateWidget(currentDate);
         });
 
+        // View toggle
+        viewToggleBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                setView(this.dataset.view);
+            });
+        });
+
+        // Month navigation
+        prevMonthBtn.addEventListener('click', function() {
+            const newDate = new Date(currentDate);
+            newDate.setMonth(currentDate.getMonth() - 1);
+            currentDate = newDate;
+            renderMonthView(currentDate);
+            updateWidget(currentDate);
+        });
+
+        nextMonthBtn.addEventListener('click', function() {
+            const newDate = new Date(currentDate);
+            newDate.setMonth(currentDate.getMonth() + 1);
+            currentDate = newDate;
+            renderMonthView(currentDate);
+            updateWidget(currentDate);
+        });
+
         // Keyboard shortcuts
         document.addEventListener('keydown', function(e) {
             if (e.key === 'ArrowLeft') {
-                const newDate = new Date(currentDate);
-                newDate.setDate(currentDate.getDate() - 1);
-                currentDate = newDate;
-                updateWidget(currentDate);
+                if (currentView === 'day') {
+                    const newDate = new Date(currentDate);
+                    newDate.setDate(currentDate.getDate() - 1);
+                    currentDate = newDate;
+                    updateWidget(currentDate);
+                }
                 e.preventDefault();
             } else if (e.key === 'ArrowRight') {
-                const newDate = new Date(currentDate);
-                newDate.setDate(currentDate.getDate() + 1);
-                currentDate = newDate;
-                updateWidget(currentDate);
+                if (currentView === 'day') {
+                    const newDate = new Date(currentDate);
+                    newDate.setDate(currentDate.getDate() + 1);
+                    currentDate = newDate;
+                    updateWidget(currentDate);
+                }
                 e.preventDefault();
             } else if (e.key === 't' || e.key === 'T') {
                 const now = new Date();
@@ -741,6 +1078,9 @@
                     currentDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 12, 0, 0);
                 }
                 updateWidget(currentDate);
+                e.preventDefault();
+            } else if (e.key === 'm' || e.key === 'M') {
+                setView(currentView === 'day' ? 'month' : 'day');
                 e.preventDefault();
             }
         });
