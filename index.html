@@ -51,7 +51,7 @@
         }
 
         .timezone-selector {
-            margin-bottom: 1.2rem;
+            margin-bottom: 1rem;
         }
         .timezone-selector select {
             width: 100%;
@@ -81,15 +81,17 @@
             color: #f0e8d0;
         }
 
-        /* --- Calendar Input --- */
+        /* --- Calendar Controls --- */
         .calendar-control {
             display: flex;
-            gap: 0.6rem;
-            margin-bottom: 1.2rem;
+            gap: 0.5rem;
+            margin-bottom: 0.8rem;
             align-items: center;
+            flex-wrap: wrap;
         }
         .calendar-control input[type="date"] {
             flex: 1;
+            min-width: 140px;
             padding: 0.7rem 1rem;
             background: rgba(255, 255, 255, 0.06);
             border: 1px solid rgba(255, 255, 255, 0.1);
@@ -111,35 +113,47 @@
             filter: invert(0.8);
             cursor: pointer;
         }
-        .calendar-control .today-btn {
-            padding: 0.7rem 1.2rem;
+
+        .nav-controls {
+            display: flex;
+            gap: 0.4rem;
+            align-items: center;
+        }
+        .nav-controls button {
+            padding: 0.7rem 1rem;
             background: rgba(255, 255, 255, 0.06);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.08);
             border-radius: 12px;
             color: #f0e8d0;
-            font-size: 0.9rem;
+            font-size: 1rem;
             cursor: pointer;
             transition: all 0.2s;
-            white-space: nowrap;
+            line-height: 1;
+            min-width: 44px;
         }
-        .calendar-control .today-btn:hover {
+        .nav-controls button:hover {
             background: rgba(255, 255, 255, 0.12);
             border-color: rgba(255, 255, 255, 0.2);
         }
-        .calendar-control .today-btn:active {
-            transform: scale(0.96);
+        .nav-controls button:active {
+            transform: scale(0.94);
+        }
+        .nav-controls .today-btn {
+            padding: 0.7rem 1.2rem;
+            font-size: 0.85rem;
+            min-width: auto;
         }
 
         /* --- Quick date chips --- */
         .quick-dates {
             display: flex;
-            gap: 0.5rem;
+            gap: 0.4rem;
             margin-bottom: 1.2rem;
             flex-wrap: wrap;
             justify-content: center;
         }
         .quick-dates button {
-            padding: 0.4rem 0.9rem;
+            padding: 0.35rem 0.8rem;
             background: rgba(255, 255, 255, 0.04);
             border: 1px solid rgba(255, 255, 255, 0.06);
             border-radius: 20px;
@@ -243,16 +257,27 @@
             margin-top: 0.5rem;
         }
 
+        .future-badge {
+            display: inline-block;
+            font-size: 0.65rem;
+            background: rgba(100, 200, 255, 0.12);
+            color: #8ac4e0;
+            padding: 0.15rem 0.6rem;
+            border-radius: 12px;
+            margin-left: 0.5rem;
+            border: 1px solid rgba(100, 200, 255, 0.1);
+        }
+
         @media (max-width: 480px) {
             .container { padding: 1.2rem; }
             .ac-widget { padding: 1.5rem 1rem; }
             .moon-emoji { font-size: 4rem; }
             .phase-label { font-size: 1.4rem; }
             .widget-header h1 { font-size: 1.4rem; }
-            .calendar-control { flex-wrap: wrap; }
-            .calendar-control input[type="date"] { flex: 1 1 100%; }
-            .calendar-control .today-btn { flex: 1; }
-            .quick-dates button { font-size: 0.7rem; padding: 0.3rem 0.7rem; }
+            .calendar-control input[type="date"] { min-width: 120px; }
+            .nav-controls button { padding: 0.5rem 0.7rem; min-width: 36px; font-size: 0.9rem; }
+            .nav-controls .today-btn { padding: 0.5rem 0.8rem; font-size: 0.75rem; }
+            .quick-dates button { font-size: 0.65rem; padding: 0.25rem 0.6rem; }
         }
     </style>
 </head>
@@ -319,18 +344,24 @@
     <!-- Calendar Controls -->
     <div class="calendar-control">
         <input type="date" id="datePicker" />
-        <button class="today-btn" id="todayBtn">📅 Today</button>
+        <div class="nav-controls">
+            <button id="prevDayBtn" title="Previous day">◀</button>
+            <button id="nextDayBtn" title="Next day">▶</button>
+            <button class="today-btn" id="todayBtn">📅 Today</button>
+        </div>
     </div>
 
     <!-- Quick date chips -->
     <div class="quick-dates" id="quickDates">
-        <button data-offset="-3">3d ago</button>
-        <button data-offset="-2">2d ago</button>
-        <button data-offset="-1">Yesterday</button>
+        <button data-offset="-7">-7d</button>
+        <button data-offset="-3">-3d</button>
+        <button data-offset="-1">-1d</button>
         <button data-offset="0" class="active">Today</button>
-        <button data-offset="1">Tomorrow</button>
-        <button data-offset="2">2d ahead</button>
-        <button data-offset="3">3d ahead</button>
+        <button data-offset="1">+1d</button>
+        <button data-offset="3">+3d</button>
+        <button data-offset="7">+7d</button>
+        <button data-offset="14">+14d</button>
+        <button data-offset="30">+30d</button>
     </div>
 
     <div class="ac-widget-moon"
@@ -357,6 +388,8 @@
         const dateDisplay = document.getElementById('dateDisplay');
         const datePicker = document.getElementById('datePicker');
         const todayBtn = document.getElementById('todayBtn');
+        const prevDayBtn = document.getElementById('prevDayBtn');
+        const nextDayBtn = document.getElementById('nextDayBtn');
         const quickDates = document.getElementById('quickDates');
         const selectedDateLabel = document.getElementById('selectedDateLabel');
 
@@ -424,12 +457,16 @@
         }
 
         // --- Render widget ---
-        function renderWidget(phaseData, place, dateStr) {
+        function renderWidget(phaseData, place, dateStr, isFuture) {
             const percent = Math.round(phaseData.illumination * 100);
 
             let html = `<div class="ac-widget">`;
             html += `<div class="moon-emoji">${phaseData.emoji}</div>`;
-            html += `<div class="phase-label">${phaseData.name}</div>`;
+            html += `<div class="phase-label">${phaseData.name}`;
+            if (isFuture) {
+                html += ` <span class="future-badge">🔮 Future</span>`;
+            }
+            html += `</div>`;
             html += `<div class="phase-detail">`;
             html += `<span class="illumination">${percent}% illuminated</span>`;
             html += ` · Age ${Math.round(phaseData.age)}d`;
@@ -458,7 +495,7 @@
             </div>`;
         }
 
-        // --- Update date display ---
+        // --- Update date display (header) ---
         function updateDateDisplay(tz) {
             const now = new Date();
             try {
@@ -478,13 +515,18 @@
         // --- Format date for display ---
         function formatDateDisplay(date, tz) {
             try {
-                return date.toLocaleDateString('en-US', {
+                const str = date.toLocaleDateString('en-US', {
                     weekday: 'long',
                     year: 'numeric',
                     month: 'long',
                     day: 'numeric',
                     timeZone: tz || 'UTC'
                 });
+                // Check if it's a future date
+                const today = new Date();
+                const todayTz = new Date(today.toLocaleString('en-US', { timeZone: tz || 'UTC' }));
+                const isFuture = date > todayTz;
+                return isFuture ? `${str} 🔮` : str;
             } catch (_) {
                 return date.toLocaleDateString('en-US', {
                     weekday: 'long',
@@ -495,13 +537,27 @@
             }
         }
 
+        // --- Check if date is in the future ---
+        function isFutureDate(date, tz) {
+            try {
+                const today = new Date();
+                const todayTz = new Date(today.toLocaleString('en-US', { timeZone: tz || 'UTC' }));
+                // Compare dates (ignore time)
+                const todayDate = new Date(todayTz.getFullYear(), todayTz.getMonth(), todayTz.getDate());
+                const compareDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+                return compareDate > todayDate;
+            } catch (_) {
+                const today = new Date();
+                const todayDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+                const compareDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+                return compareDate > todayDate;
+            }
+        }
+
         // --- Get date in timezone ---
         function getDateInTimezone(date, tz) {
             try {
-                const parts = date.toLocaleString('en-US', { timeZone: tz }).split(/[\/,: ]/);
-                // Simple approach: use the string to create a new date
-                const tzDate = new Date(date.toLocaleString('en-US', { timeZone: tz }));
-                return tzDate;
+                return new Date(date.toLocaleString('en-US', { timeZone: tz }));
             } catch (_) {
                 return new Date(date);
             }
@@ -524,8 +580,9 @@
 
             // Format date for display
             const dateStr = formatDateDisplay(dateInTz, currentTz);
+            const isFuture = isFutureDate(dateInTz, currentTz);
 
-            renderWidget(phase, currentPlace, dateStr);
+            renderWidget(phase, currentPlace, dateStr, isFuture);
             updateDateDisplay(currentTz);
 
             // Update date picker
@@ -533,9 +590,12 @@
             const month = String(dateToUse.getMonth() + 1).padStart(2, '0');
             const day = String(dateToUse.getDate()).padStart(2, '0');
             datePicker.value = `${year}-${month}-${day}`;
+
+            // Update quick dates
+            updateQuickDates(dateInTz);
         }
 
-        // --- Main update ---
+        // --- Main init ---
         function initWidget() {
             const value = selectEl.value;
             const parts = value.split(',');
@@ -547,86 +607,8 @@
                 currentPlace = parts.slice(3).join(',');
             }
 
-            // Set date picker max to today
-            const today = new Date();
-            const year = today.getFullYear();
-            const month = String(today.getMonth() + 1).padStart(2, '0');
-            const day = String(today.getDate()).padStart(2, '0');
-            datePicker.max = `${year}-${month}-${day}`;
-
             updateWidget(currentDate);
         }
-
-        // --- Event handlers ---
-
-        // Timezone change
-        selectEl.addEventListener('change', function() {
-            const value = this.value;
-            const parts = value.split(',');
-            if (parts.length >= 4) {
-                currentLat = parseFloat(parts[0]);
-                currentLng = parseFloat(parts[1]);
-                currentTz = parts[2];
-                currentPlace = parts.slice(3).join(',');
-                updateWidget(currentDate);
-            }
-        });
-
-        // Date picker change
-        datePicker.addEventListener('change', function() {
-            if (this.value) {
-                const parts = this.value.split('-');
-                const newDate = new Date(
-                    parseInt(parts[0]),
-                    parseInt(parts[1]) - 1,
-                    parseInt(parts[2]),
-                    12, 0, 0 // Noon to avoid timezone issues
-                );
-                currentDate = newDate;
-                updateWidget(currentDate);
-                updateQuickDates(currentDate);
-            }
-        });
-
-        // Today button
-        todayBtn.addEventListener('click', function() {
-            const now = new Date();
-            // Get today in the current timezone
-            try {
-                const tzNow = new Date(now.toLocaleString('en-US', { timeZone: currentTz }));
-                currentDate = new Date(tzNow.getFullYear(), tzNow.getMonth(), tzNow.getDate(), 12, 0, 0);
-            } catch (_) {
-                currentDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 12, 0, 0);
-            }
-            updateWidget(currentDate);
-            updateQuickDates(currentDate);
-        });
-
-        // Quick date chips
-        quickDates.addEventListener('click', function(e) {
-            const btn = e.target.closest('button');
-            if (!btn) return;
-
-            const offset = parseInt(btn.dataset.offset);
-            if (isNaN(offset)) return;
-
-            // Get today in current timezone
-            let today;
-            try {
-                const now = new Date();
-                const tzNow = new Date(now.toLocaleString('en-US', { timeZone: currentTz }));
-                today = new Date(tzNow.getFullYear(), tzNow.getMonth(), tzNow.getDate(), 12, 0, 0);
-            } catch (_) {
-                const now = new Date();
-                today = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 12, 0, 0);
-            }
-
-            const newDate = new Date(today);
-            newDate.setDate(today.getDate() + offset);
-            currentDate = newDate;
-            updateWidget(currentDate);
-            updateQuickDates(currentDate);
-        });
 
         // --- Update quick dates highlighting ---
         function updateQuickDates(selectedDate) {
@@ -654,13 +636,120 @@
             });
         }
 
+        // --- Event handlers ---
+
+        // Timezone change
+        selectEl.addEventListener('change', function() {
+            const value = this.value;
+            const parts = value.split(',');
+            if (parts.length >= 4) {
+                currentLat = parseFloat(parts[0]);
+                currentLng = parseFloat(parts[1]);
+                currentTz = parts[2];
+                currentPlace = parts.slice(3).join(',');
+                updateWidget(currentDate);
+            }
+        });
+
+        // Date picker change
+        datePicker.addEventListener('change', function() {
+            if (this.value) {
+                const parts = this.value.split('-');
+                const newDate = new Date(
+                    parseInt(parts[0]),
+                    parseInt(parts[1]) - 1,
+                    parseInt(parts[2]),
+                    12, 0, 0
+                );
+                currentDate = newDate;
+                updateWidget(currentDate);
+            }
+        });
+
+        // Today button
+        todayBtn.addEventListener('click', function() {
+            const now = new Date();
+            try {
+                const tzNow = new Date(now.toLocaleString('en-US', { timeZone: currentTz }));
+                currentDate = new Date(tzNow.getFullYear(), tzNow.getMonth(), tzNow.getDate(), 12, 0, 0);
+            } catch (_) {
+                currentDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 12, 0, 0);
+            }
+            updateWidget(currentDate);
+        });
+
+        // Previous day button
+        prevDayBtn.addEventListener('click', function() {
+            const newDate = new Date(currentDate);
+            newDate.setDate(currentDate.getDate() - 1);
+            currentDate = newDate;
+            updateWidget(currentDate);
+        });
+
+        // Next day button
+        nextDayBtn.addEventListener('click', function() {
+            const newDate = new Date(currentDate);
+            newDate.setDate(currentDate.getDate() + 1);
+            currentDate = newDate;
+            updateWidget(currentDate);
+        });
+
+        // Quick date chips
+        quickDates.addEventListener('click', function(e) {
+            const btn = e.target.closest('button');
+            if (!btn) return;
+
+            const offset = parseInt(btn.dataset.offset);
+            if (isNaN(offset)) return;
+
+            let today;
+            try {
+                const now = new Date();
+                const tzNow = new Date(now.toLocaleString('en-US', { timeZone: currentTz }));
+                today = new Date(tzNow.getFullYear(), tzNow.getMonth(), tzNow.getDate(), 12, 0, 0);
+            } catch (_) {
+                const now = new Date();
+                today = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 12, 0, 0);
+            }
+
+            const newDate = new Date(today);
+            newDate.setDate(today.getDate() + offset);
+            currentDate = newDate;
+            updateWidget(currentDate);
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'ArrowLeft') {
+                const newDate = new Date(currentDate);
+                newDate.setDate(currentDate.getDate() - 1);
+                currentDate = newDate;
+                updateWidget(currentDate);
+                e.preventDefault();
+            } else if (e.key === 'ArrowRight') {
+                const newDate = new Date(currentDate);
+                newDate.setDate(currentDate.getDate() + 1);
+                currentDate = newDate;
+                updateWidget(currentDate);
+                e.preventDefault();
+            } else if (e.key === 't' || e.key === 'T') {
+                const now = new Date();
+                try {
+                    const tzNow = new Date(now.toLocaleString('en-US', { timeZone: currentTz }));
+                    currentDate = new Date(tzNow.getFullYear(), tzNow.getMonth(), tzNow.getDate(), 12, 0, 0);
+                } catch (_) {
+                    currentDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 12, 0, 0);
+                }
+                updateWidget(currentDate);
+                e.preventDefault();
+            }
+        });
+
         // --- Init ---
         document.addEventListener('DOMContentLoaded', function() {
-            // Set default to London (GMT)
             const defaultOption = selectEl.querySelector('option[value="51.5074,-0.1278,Europe/London,London (GMT)"]');
             if (defaultOption) selectEl.value = defaultOption.value;
 
-            // Get today in London timezone for initial state
             try {
                 const now = new Date();
                 const tzNow = new Date(now.toLocaleString('en-US', { timeZone: 'Europe/London' }));
